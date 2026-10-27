@@ -1,0 +1,1783 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chlorine Breakpoint Lab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0f1e2c;--panel:#0f2230;--card:#12293a;--teal:#46c2a8;--gold:#e3b341;--green:#5fd38a;--red:#e06a5c;--grid:#1d3f55;--border:#23495f;--label:#8fb4cc;--text:#dcefff;--tick:#5c8299}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55;font-size:16px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--panel);flex-wrap:wrap}
+.brand small{color:var(--teal);letter-spacing:.08em;font-size:12px;text-transform:uppercase}
+.brand h1{margin:2px 0 0;font-size:22px;font-weight:600}
+.brand .tag{color:var(--label);font-size:13px}
+nav{display:flex;gap:8px;padding:12px 20px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:8px 14px}
+button:hover:not(:disabled){border-color:var(--teal)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--teal);color:#06231c;border-color:var(--teal);font-weight:600}
+button.gold{background:var(--gold);color:#2b1d00;border-color:var(--gold);font-weight:600}
+button.active{border-color:var(--teal);box-shadow:inset 0 -3px 0 var(--teal)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+main{max-width:1080px;margin:0 auto;padding:20px}
+section.module{display:none}
+section.module.show{display:block}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px}
+.card h2{margin:0 0 6px;font-size:19px}
+.card h3{margin:0 0 8px;font-size:16px;color:var(--label)}
+.muted{color:var(--label)}
+.small{font-size:13px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
+.stat b{display:block;font-size:17px}
+.stat span{font-size:12px;color:var(--label)}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--grid);text-align:center;white-space:nowrap}
+th{color:var(--label);font-weight:500}
+input[type=number],select{font:inherit;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px 6px;width:84px}
+select{width:auto}
+input.ok{border-color:var(--green);background:#123526}
+input.bad{border-color:var(--red);background:#3a1a17}
+.swatch{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid var(--border);vertical-align:middle;margin-right:6px}
+.progress{height:8px;background:var(--card);border-radius:4px;overflow:hidden;margin-top:10px;display:none}
+.progress div{height:100%;width:0;background:var(--teal);transition:width 1.2s linear}
+.chartbox{position:relative;height:380px;margin-top:8px}
+.msg{padding:10px 12px;border-radius:8px;margin-top:10px;font-size:14px}
+.msg.good{background:#123526;border:1px solid var(--green)}
+.msg.warn{background:#3a2c0b;border:1px solid var(--gold)}
+.msg.bad{background:#3a1a17;border:1px solid var(--red)}
+.msg.info{background:var(--card);border:1px solid var(--border)}
+.err{color:var(--red);font-size:13px;margin-top:6px}
+.titus{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:14px}
+.titus .av{flex:0 0 38px;height:38px;border-radius:50%;background:var(--teal);color:#06231c;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.opt{display:block;width:100%;text-align:left;margin:6px 0}
+.opt.correct{border-color:var(--green);background:#123526}
+.opt.wrong{border-color:var(--red);background:#3a1a17}
+.legendrow{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--label);margin-top:6px}
+.legendrow i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px}
+#shelf{position:fixed;top:0;right:0;width:min(360px,100%);height:100%;background:var(--panel);border-left:1px solid var(--border);padding:18px;transform:translateX(100%);transition:transform .25s;z-index:20;overflow-y:auto}
+#shelf.open{transform:none}
+.item{display:flex;gap:10px;align-items:center;padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--card)}
+.item.locked{opacity:.35}
+.item .ic{font-size:22px;width:30px;text-align:center}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--gold);padding:10px 16px;border-radius:10px;display:none;z-index:30;max-width:90%}
+.case{font-size:15px}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--label)}
+details summary{cursor:pointer;color:var(--teal);font-weight:600}
+details li{margin-bottom:6px}
+.qnum{color:var(--gold);font-size:13px}
+input[type=range]{accent-color:var(--teal);width:100%}
+.ctrl span{display:block;font-size:12px;color:var(--label)}
+.ctrl b{font-size:15px}
+.phaseTitle{font-size:18px;font-weight:600;margin:0 0 4px}
+.beaker{width:70px;height:90px;border:2px solid var(--label);border-top:none;border-radius:0 0 14px 14px;position:relative;overflow:hidden;flex:0 0 70px}
+.beaker div{position:absolute;left:0;right:0;bottom:0;height:75%;transition:background .2s}
+.labGrid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:880px){.labGrid{grid-template-columns:1fr}}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:middle;margin-right:5px}
+.dot.tri{border-radius:0;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.dot.cap{width:16px;height:8px;border-radius:4px}
+.vial{width:36px;height:74px;border:2px solid var(--label);border-top:none;border-radius:0 0 10px 10px;position:relative;overflow:hidden;margin:0 auto 4px}
+.vial div{position:absolute;left:0;right:0;bottom:0;height:80%;transition:background .4s}
+.pbar{position:relative;display:flex;height:28px;border-radius:6px;overflow:visible;border:1px solid var(--border);margin-top:8px}
+.pbar .seg{display:flex;align-items:center;justify-content:center;font-size:11px;color:#0f1e2c;font-weight:600;overflow:hidden;white-space:nowrap}
+.pbar .pm{position:absolute;top:-6px;bottom:-6px;width:3px;background:#dcefff;border-radius:2px;transition:left .1s linear}
+.where{display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--card);border:1px solid var(--border);margin:6px 0 10px}
+.where div{height:100%;transition:width .15s}
+.wrow{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:3px 0;border-bottom:1px solid var(--grid)}
+.narr{font-size:14px;padding:7px 10px;border-radius:8px;margin-bottom:6px;background:var(--card);border-left:3px solid var(--border)}
+.presetBtn.active{border-color:var(--gold);box-shadow:inset 0 -3px 0 var(--gold)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <small>Mizuverse Labs</small>
+    <h1>Chlorine Breakpoint Lab</h1>
+    <div class="tag">Stay curious. Stay clear.</div>
+  </div>
+  <button id="labBtn" aria-controls="shelf">My Lab <span id="labCount">0/8</span></button>
+</header>
+<nav aria-label="Modules">
+  <button data-mod="lab" class="active">Virtual lab</button>
+  <button data-mod="m1">1 · Build the curve</button>
+  <button data-mod="m2">2 · Zone detective</button>
+  <button data-mod="m3">3 · Calculations</button>
+  <button data-mod="m0">Curve viewer</button>
+</nav>
+
+<main>
+<!-- VIRTUAL LAB -->
+<section class="module show" id="lab">
+  <div class="card">
+    <h2>Virtual lab · Chlorine demand bench test</h2>
+    <p class="small muted" style="margin:0 0 6px">Each water: pre-lab quiz → lab → analysis → next water.</p>
+    <p class="muted">Choose a water sample. Each test uses a fresh 1 L sample: set a chlorine dose, add it, and watch what the chlorine does inside the beaker. Then wait out the contact time and measure with DPD. Test several doses to build the breakpoint curve from your own results.</p>
+    <div class="row" id="labScen"></div>
+    <p id="labStory" style="margin:12px 0 8px"></p>
+    <div class="grid2" id="labWater"></div>
+    <div id="labMission"></div>
+  </div>
+  <div id="labStage"></div>
+  <div id="labBody">
+  <div class="labGrid">
+    <div class="card" style="padding:12px">
+      <canvas id="labCanvas" style="width:100%;max-width:480px;aspect-ratio:480/540;display:block;margin:0 auto" role="img" aria-label="Beaker showing chlorine reacting with chemicals in the water sample"></canvas>
+      <div class="narr" id="labCaption" style="margin-top:8px"></div>
+      <div class="legendrow" style="margin-top:10px">
+        <span><b class="dot" style="background:#39d98a"></b>Free chlorine (HOCl)</span>
+        <span><b class="dot" style="border:2px solid #39d98a"></b>OCl⁻ (weaker free)</span>
+        <span><b class="dot" style="background:#7a93a6;width:6px;height:6px"></b>Cl⁻ (used up)</span>
+        <span><b class="dot" style="background:#f6b26b"></b>Fe²⁺ → <b class="dot" style="background:#b4531f;margin-left:4px"></b>rust</span>
+        <span><b class="dot" style="background:#f08ad6"></b>Mn²⁺ → <b class="dot" style="background:#161616;border:1px solid #777;margin-left:4px"></b>MnO₂</span>
+        <span><b class="dot" style="background:#ffe066"></b>H₂S → sulfur</span>
+        <span><b class="dot tri" style="background:#4aa3ff"></b>NH₃ ammonia</span>
+        <span><b class="dot tri" style="background:#4aa3ff"></b><b class="dot" style="background:#39d98a;width:7px;height:7px;margin-left:-4px"></b>NH₂Cl chloramine</span>
+        <span><b class="dot" style="border:1.5px solid #e6f4ff"></b>N₂ gas bubble</span>
+        <span><b class="dot cap" style="background:#b48cff"></b>Microbe</span>
+      </div>
+      <p class="small muted" style="margin:8px 0 0">Each green dot = 0.1 mg/L of chlorine. Each Fe, Mn or S dot = enough of that chemical to use up 0.1 mg/L of chlorine.</p>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Step 1 · Set the dose and add chlorine</h3>
+        <div class="row">
+          <button data-dd="-0.5" aria-label="Decrease dose by 0.5">−0.5</button><button data-dd="-0.1" aria-label="Decrease dose by 0.1">−0.1</button>
+          <input type="number" id="labDose" min="0.1" max="10" step="0.1" aria-label="Chlorine dose in mg/L"> <span class="muted" id="labDoseUnit">mg/L</span>
+          <button data-dd="0.1" aria-label="Increase dose by 0.1">+0.1</button><button data-dd="0.5" aria-label="Increase dose by 0.5">+0.5</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <label>Contact time
+            <select id="labCt"><option value="10">10 min</option><option value="30" selected>30 min</option><option value="60">60 min</option></select>
+          </label>
+          <button class="primary" id="labAdd">Add chlorine</button>
+          <button id="labNew">New sample</button>
+        </div>
+        <div class="err" id="labDoseErr"></div>
+        <div class="small muted" id="labHint" style="margin-top:8px"></div>
+      </div>
+      <div class="card">
+        <div id="labPhaseTxt"></div>
+        <div class="chartbox" style="height:330px"><canvas id="labChart" role="img" aria-label="Live chlorine breakpoint curve for the beaker"></canvas></div>
+        <div class="legendrow">
+          <span><i style="background:var(--teal)"></i>Total</span>
+          <span><i style="background:var(--gold)"></i>Free</span>
+          <span><i style="background:var(--label)"></i>Combined</span>
+          <span><i style="background:var(--red)"></i>No-demand line</span>
+          <span><b class="dot" style="background:#46c2a8;border:2px solid #dcefff"></b>Your beaker now</span>
+          <span><b class="dot" style="border:2px solid #46c2a8;border-radius:2px;transform:rotate(45deg);width:9px;height:9px"></b>Your DPD tests</span>
+        </div>
+        <p class="small muted" style="margin:6px 0 0">The curve draws itself as you add chlorine. Doses you have explored stay on the chart, even with a new sample.</p>
+      </div>
+    </div>
+  </div>
+  <div class="labGrid">
+    <div class="card"><h3>Step 2 · DPD test</h3>
+      <div class="row"><button id="labFree" disabled>Test free chlorine</button><button id="labTotal" disabled>Test total chlorine</button></div>
+      <div class="row" id="labVials" style="margin-top:12px;align-items:flex-end"></div>
+    </div>
+    <div class="card"><h3>Where did the chlorine go?</h3><div id="labWhere"></div></div>
+  </div>
+  <div class="card"><h3>Lab notes</h3><div id="labClock" class="qnum" style="margin-bottom:8px"></div><div id="labNarr"></div></div>
+  <div class="card">
+    <h3>Step 3 · Lab notebook</h3>
+    <div class="row"><button id="labModel" disabled>Show whole curve</button><button id="labClear">Clear notebook</button></div>
+    <div id="labCoach"></div>
+    <div class="tablewrap" style="margin-top:10px"><table>
+      <thead><tr><th>#</th><th>Dose</th><th>Contact</th><th>Free</th><th>Total</th><th>Combined</th><th>Phase</th><th>Microbes killed</th><th style="text-align:left">Observations</th></tr></thead>
+      <tbody id="labRows"></tbody></table></div>
+  </div>
+  </div>
+</section>
+
+<!-- MODULE 0: CURVE EXPLORER -->
+<section class="module" id="m0">
+  <div class="card">
+    <h2>Curve explorer · Watch the breakpoint curve form</h2>
+    <p class="muted">Press Play to add chlorine a little at a time and watch the residual change. Pick a different water, or move the sliders, and see how the curve changes shape.</p>
+    <div class="row" id="m0presets"></div>
+  </div>
+  <div class="card">
+    <div class="chartbox" style="height:420px"><canvas id="m0chart" role="img" aria-label="Animated chlorine breakpoint curve"></canvas></div>
+    <div class="legendrow">
+      <span><i style="background:var(--teal)"></i>Total</span>
+      <span><i style="background:var(--gold)"></i>Free</span>
+      <span><i style="background:var(--label)"></i>Combined</span>
+      <span><i style="background:var(--red)"></i>No-demand line</span>
+      <span><i style="background:var(--green)"></i>Peak and breakpoint</span>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="primary" id="m0play">Play</button>
+      <button id="m0reset">Reset</button>
+      <label style="flex:1;display:flex;gap:10px;align-items:center;min-width:240px">Dose <input type="range" id="m0dose" min="0" max="10" step="0.05" value="0" aria-label="Chlorine dose"> <b id="m0doseVal" style="white-space:nowrap">0.00 mg/L</b></label>
+    </div>
+  </div>
+  <div class="card" id="m0read"></div>
+  <div class="card">
+    <h3>Water conditions</h3>
+    <div class="grid2" id="m0ctrl"></div>
+  </div>
+</section>
+
+<!-- MODULE 1 -->
+<section class="module" id="m1">
+  <div class="quizWrap" id="quiz-m1"></div>
+  <div class="modBody" id="body-m1" hidden>
+    <div class="card">
+      <h2>Module 1 · Run a chlorine demand test</h2>
+      <p class="muted">Dose 10 sample bottles with different amounts of chlorine, wait the contact time, then measure free and total chlorine with DPD. Plot your results and find the four phases of the curve.</p>
+      <h3>Water sample: <span id="m1Name"></span></h3>
+      <div class="grid2" id="m1Water"></div>
+      <div class="row" style="margin-top:12px">
+        <label>Contact time
+          <select id="m1ct"><option value="10">10 min</option><option value="30" selected>30 min</option><option value="60">60 min</option></select>
+        </label>
+        <label>Read free chlorine
+          <select id="m1delay"><option value="0.5" selected>within 1 minute</option><option value="3">after 3 minutes</option></select>
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Step 1 · Choose a chlorine dose for each bottle (mg/L)</h3>
+      <div class="row">
+        <button id="m1fill">Fill example series</button>
+        <button id="m1clear">Clear doses</button>
+        <button class="primary" id="m1run">Run test</button>
+      </div>
+      <div id="m1runErr" class="err"></div>
+      <div class="progress" id="m1prog"><div></div></div>
+      <div class="titus"><div class="av">Titus</div><div>Tip: spread your doses out. You need some low doses, some in the middle, and a few high enough to get past the breakpoint.</div></div>
+    </div>
+
+    <div class="card">
+      <h3>Step 2 · Read DPD results, then calculate</h3>
+      <div class="row">
+        <button id="m1readFree" disabled>Read free chlorine (all)</button>
+        <button id="m1readTotal" disabled>Read total chlorine (all)</button>
+        <button id="m1check" disabled>Check my calculations</button>
+      </div>
+      <p class="small muted">Combined = total − free. Demand = dose − total residual. Round to 2 decimals.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Bottle</th><th>Dose</th><th>Free</th><th>Total</th><th>Combined</th><th>Demand</th></tr></thead>
+          <tbody id="m1rows"></tbody>
+        </table>
+      </div>
+      <div id="m1calcMsg"></div>
+    </div>
+
+    <div class="card">
+      <h3>Step 3 · Plot and find the phases</h3>
+      <div class="chartbox"><canvas id="m1chart" aria-label="Chlorine residual versus dose chart" role="img"></canvas></div>
+      <div class="legendrow">
+        <span><i style="background:var(--teal)"></i>Total</span>
+        <span><i style="background:var(--gold)"></i>Free</span>
+        <span><i style="background:var(--label)"></i>Combined</span>
+        <span><i style="background:var(--red)"></i>No-demand line (residual = dose)</span>
+        <span><i style="background:var(--green)"></i>Your marks</span>
+      </div>
+      <p class="small muted">Click a button, then click on the chart where you think that point is.</p>
+      <div class="row">
+        <button class="markBtn" data-mark="p1" disabled>Mark end of Phase 1</button>
+        <button class="markBtn" data-mark="peak" disabled>Mark combined peak</button>
+        <button class="markBtn" data-mark="bp" disabled>Mark breakpoint</button>
+        <button class="gold" id="m1checkMarks" disabled>Check my marks</button>
+      </div>
+      <div id="m1markMsg"></div>
+      <div class="row" style="margin-top:12px">
+        <button id="m1ctBtn" disabled title="Coming soon">Send to Contact Time Lab (coming soon)</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 2 -->
+<section class="module" id="m2">
+  <div class="quizWrap" id="quiz-m2"></div>
+  <div class="modBody" id="body-m2" hidden>
+    <div class="card">
+      <h2>Module 2 · Zone detective</h2>
+      <p class="muted">Each sample was dosed and held for 30 minutes. Use the clues to decide which phase of the curve it is in.</p>
+      <div id="m2case"></div>
+    </div>
+    <div class="card" id="m2hump" hidden>
+      <h2>Challenge · Which side of the hump?</h2>
+      <div id="m2humpBody"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 3 -->
+<section class="module" id="m3">
+  <div class="quizWrap" id="quiz-m3"></div>
+  <div class="modBody" id="body-m3" hidden>
+    <div class="card">
+      <h2>Module 3 · Chlorine curve calculations</h2>
+      <p class="muted">Use these factors: Fe²⁺ 0.64, Mn²⁺ 1.3, H₂S 2.1 (mg Cl₂ per mg). Combined peak ≈ 5 × NH₃-N. Theoretical breakpoint ≈ 7.6 × NH₃-N.</p>
+      <div id="m3q"></div>
+    </div>
+  </div>
+</section>
+
+<div class="card">
+  <details>
+    <summary>Model assumptions (how this simulation calculates)</summary>
+    <ul class="small" style="margin-top:10px">
+      <li><b>Phase 1 demand</b> = 0.64·Fe²⁺ + 1.3·Mn²⁺ + 2.1·H₂S + 5.0·NO₂-N (mg/L as Cl₂). Manganese reacts slowly below pH 8.5, so only part of its demand shows up in short contact times.</li>
+      <li><b>Phase 2</b>: chlorine left after Phase 1 combines with ammonia. Combined residual rises at about 0.9× the added dose (some is lost to organic nitrogen). The peak is near 5 mg Cl₂ per mg NH₃-N and is rounded, a bit lower than theory.</li>
+      <li><b>Phase 3</b>: extra chlorine destroys chloramines. The practical breakpoint is 8–10:1 (this water: 8.5:1), above the 7.6:1 theory. Destruction is slow: cold water and short contact time leave it unfinished, so the dip is shallower and the breakpoint moves to higher doses.</li>
+      <li><b>Phase 4</b>: past the breakpoint, after a small extra organic demand, free chlorine rises about 1:1 with dose. A small irreducible combined residual (organic chloramines) remains.</li>
+      <li><b>Free chlorine split</b>: HOCl fraction = 1 / (1 + 10^(pH − 7.5)).</li>
+      <li><b>Odor</b>: dichloramine increases at lower pH and during Phase 3, giving a sharp "pool" odor.</li>
+      <li><b>DPD reading</b>: free chlorine read within 1 minute is accurate. Waiting longer lets monochloramine react, so free reads falsely high. Each reading has ±0.03 mg/L random noise.</li>
+      <li>Simplified for teaching: real curves depend on many more factors. Always confirm with a bench test on your own water.</li>
+    </ul>
+  </details>
+</div>
+</main>
+
+<aside id="shelf" aria-label="My Lab equipment">
+  <div class="row" style="justify-content:space-between">
+    <h2 style="margin:0;font-size:19px">My Lab</h2>
+    <button id="shelfClose" aria-label="Close My Lab">Close</button>
+  </div>
+  <p class="small muted">Earn equipment by doing well in quizzes and modules.</p>
+  <div id="shelfItems"></div>
+  <p class="small muted" id="poopLine"></p>
+  <button id="resetProg" style="margin-top:10px">Reset progress</button>
+</aside>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ===================== ChlorineModel (pure functions, no DOM) =====================
+   Reusable by the future Contact Time Simulator.
+   Water object: {fe, mn, h2s, no2n, nh3n, orgN, pH, tempC, bpRatio, orgDemand} (mg/L, °C)
+*/
+const ChlorineModel = (() => {
+  const PKA = 7.5;
+  const FACTORS = { fe: 0.64, mn: 1.3, h2s: 2.1, no2n: 5.0 };
+  const MONO_EFF = 0.9;
+
+  function mnFraction(w, ct) { return w.pH >= 8.5 ? 1 : Math.min(1, ct / 120); }
+
+  function phase1Demand(w, ct) {
+    return FACTORS.fe * w.fe + FACTORS.mn * w.mn * mnFraction(w, ct) + FACTORS.h2s * w.h2s + FACTORS.no2n * w.no2n;
+  }
+
+  // Fraction of Phase 3 chloramine destruction finished within contact time (temperature dependent)
+  function phase3Completion(w, ct) {
+    const k = 0.08 * Math.pow(1.07, w.tempC - 20);
+    return 1 - Math.exp(-k * ct);
+  }
+
+  function hoclFraction(pH) { return 1 / (1 + Math.pow(10, pH - PKA)); }
+
+  function smoothMin(a, b, k) { return -k * Math.log(Math.exp(-a / k) + Math.exp(-b / k)); }
+
+  function residuals(dose, w, ct) {
+    const R = phase1Demand(w, ct);
+    const Dn = Math.max(0, dose - R);
+    const N = w.nh3n;
+    const irr = Math.min(0.4, 0.1 + 0.3 * w.orgN);
+    const comp = phase3Completion(w, ct);
+    let free = 0, combined = 0, phase = 1;
+    const bpEff = 5 + (w.bpRatio - 5) / comp;
+
+    const sp = (x, k) => k * Math.log(1 + Math.exp(x / k));
+    if (N < 0.05) {
+      if (Dn <= 0) phase = 1;
+      else { combined = Math.min(Dn, irr); free = sp(Dn - irr - w.orgDemand, 0.08); phase = 4; }
+    } else {
+      const peakC = 5 * N * MONO_EFF;
+      const dip = irr + (peakC - irr) * (1 - comp) * 0.5;
+      const p = 5 * N, b = bpEff * N;
+      const Ds = sp(dose - R, 0.05);
+      if (Ds <= p) { const t = Ds / p; combined = peakC * (1.1 * t + 0.8 * t * t - 0.9 * t * t * t); }
+      else if (Dn <= b) { const t = Math.min(1, (Ds - p) / (b - p)); combined = dip + (peakC - dip) * 0.5 * (1 + Math.cos(Math.PI * t)); }
+      else combined = irr + (dip - irr) * Math.exp(-(Dn - b) / (1.5 * N + 0.1));
+      free = Dn > 0 ? sp(Dn - b - w.orgDemand, 0.12) : 0;
+      if (free < 0.005) free = 0;
+      phase = Dn <= 0 ? 1 : Dn <= p ? 2 : Dn <= b ? 3 : 4;
+    }
+
+    const hf = hoclFraction(w.pH);
+    let di = w.pH >= 7.5 ? 0.05 : (w.pH >= 5 ? 0.05 + (7.5 - w.pH) / 2.5 * 0.55 : 0.6);
+    if (phase === 3) di = Math.min(0.8, di + 0.25);
+    let odor = 'none';
+    if (combined > 0.2 && (di > 0.25 || phase === 3)) odor = 'sharp chlorine / pool smell';
+    else if (free > 0.5) odor = 'mild chlorine';
+    else if (w.h2s > 0 && phase === 1) odor = 'faint rotten egg';
+
+    const hasN = N >= 0.05;
+    return {
+      dose, phase1Demand: R, netDose: Dn, free, combined, total: free + combined, phase,
+      hoclFraction: hf, hocl: free * hf, ocl: free * (1 - hf),
+      dichloramineShare: di, odor, freeAmmonia: hasN && Dn < 5 * N, completion: comp,
+      landmarks: {
+        phase1End: R,
+        peakDose: hasN ? R + 5 * N : null,
+        breakpointDose: hasN ? R + bpEff * N : R,
+        theoreticalBreakpointDose: R + 7.6 * N,
+        freeAppearsDose: hasN ? R + bpEff * N + w.orgDemand : R + irr + w.orgDemand
+      }
+    };
+  }
+
+  function landmarks(w, ct) { return residuals(0, w, ct).landmarks; }
+
+  // DPD reading. readDelayMin > 1 lets monochloramine bleed into the free reading.
+  function dpdRead(state, readDelayMin, noiseAmp = 0.03) {
+    const noise = () => (Math.random() * 2 - 1) * noiseAmp;
+    const mono = state.combined * (1 - state.dichloramineShare);
+    const falseHigh = readDelayMin > 1 ? mono * Math.min(0.25, 0.06 * readDelayMin) : 0;
+    const free = Math.max(0, state.free + falseHigh + noise());
+    const total = Math.max(free, state.total + noise());
+    return { free, total, falseHigh };
+  }
+
+  return { FACTORS, phase1Demand, phase3Completion, hoclFraction, residuals, landmarks, dpdRead };
+})();
+
+/* ===================== Helpers ===================== */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const rand = (a, b) => a + Math.random() * (b - a);
+const r1 = x => Math.round(x * 10) / 10;
+const r2 = x => Math.round(x * 100) / 100;
+const f2 = x => r2(x).toFixed(2);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function bisect(f, a, b, target, increasing) {
+  for (let i = 0; i < 60; i++) {
+    const m = (a + b) / 2, v = f(m);
+    if ((v < target) === increasing) a = m; else b = m;
+  }
+  return (a + b) / 2;
+}
+
+/* ===================== Progress & rewards ===================== */
+const PKEY = 'mizuverse.chlorineLab.progress.v1';
+const EXPORT_KEY = 'mizuverse.chlorineCurve.v1';
+const ITEMS = {
+  goggles: { name: 'Safety goggles', ic: '🥽' },
+  gloves: { name: 'Nitrile gloves', ic: '🧤' },
+  dpd: { name: 'DPD comparator', ic: '🧪' },
+  timer: { name: 'Lab timer', ic: '⏱️' },
+  amber: { name: 'Amber sample bottles', ic: '🍶' },
+  nh3kit: { name: 'Ammonia test kit', ic: '🧫' },
+  colorimeter: { name: 'Digital colorimeter', ic: '📟' },
+  cl2kit: { name: 'Chlorine test kit', ic: '💧' },
+  pipette: { name: 'Dosing pipette', ic: '💉' },
+  flask: { name: 'Erlenmeyer flask', ic: '⚗️' },
+  thermometer: { name: 'Thermometer', ic: '🌡️' },
+  labcoat: { name: 'Lab coat', ic: '🥼' },
+  microscope: { name: 'Microscope', ic: '🔬' },
+  stirrer: { name: 'Magnetic stirrer', ic: '🧲' },
+  notebook: { name: 'Lab notebook', ic: '📓' }
+};
+function loadProg() { try { return JSON.parse(localStorage.getItem(PKEY)) || null; } catch (e) { return null; } }
+function saveProg() { try { localStorage.setItem(PKEY, JSON.stringify(prog)); } catch (e) {} }
+let prog = loadProg() || { items: [], poop: 0, quizzes: {}, done: {} };
+prog.lab = prog.lab || {}; prog.done = prog.done || {};
+
+function toast(t) {
+  const el = $('#toast'); el.textContent = t; el.style.display = 'block';
+  clearTimeout(toast._t); toast._t = setTimeout(() => el.style.display = 'none', 3200);
+}
+function award(id) {
+  if (prog.items.includes(id)) { toast(`You already have: ${ITEMS[id].name}`); return; }
+  prog.items.push(id); saveProg(); renderShelf();
+  toast(`Unlocked: ${ITEMS[id].ic} ${ITEMS[id].name}`);
+}
+function renderShelf() {
+  $('#shelfItems').innerHTML = Object.entries(ITEMS).map(([id, it]) =>
+    `<div class="item ${prog.items.includes(id) ? '' : 'locked'}"><span class="ic">${it.ic}</span><span>${it.name}${prog.items.includes(id) ? '' : ' <span class="small muted">(locked)</span>'}</span></div>`).join('') +
+    (prog.items.length === Object.keys(ITEMS).length ? '<div class="msg good">Breakpoint Certified! You collected every item.</div>' : '');
+  $('#labCount').textContent = `${prog.items.length}/${Object.keys(ITEMS).length}`;
+  $('#poopLine').textContent = prog.poop ? `💩 collected: ${prog.poop}` : '';
+}
+$('#labBtn').onclick = () => $('#shelf').classList.add('open');
+$('#shelfClose').onclick = () => $('#shelf').classList.remove('open');
+$('#resetProg').onclick = () => {
+  if (!confirm('Reset all quiz results and equipment?')) return;
+  prog = { items: [], poop: 0, quizzes: {}, done: {}, lab: {} }; saveProg(); renderShelf();
+  ['m1', 'm2', 'm3'].forEach(initQuiz);
+  LAB.results = {}; labScenario('standard');
+};
+
+/* ===================== Navigation ===================== */
+$$('nav button').forEach(b => b.onclick = () => {
+  $$('nav button').forEach(x => x.classList.toggle('active', x === b));
+  $$('section.module').forEach(s => s.classList.toggle('show', s.id === b.dataset.mod));
+  if (b.dataset.mod === 'm1' && M1.chart) M1.chart.resize();
+  if (b.dataset.mod === 'm0' && M0.chart) M0.chart.resize();
+  if (b.dataset.mod === 'lab' && LAB.chart) LAB.chart.resize();
+  if (b.dataset.mod !== 'm0') m0Pause();
+});
+
+/* ===================== Pre-quizzes ===================== */
+const QUIZ = {
+  m1: { reward: 'dpd', qs: [
+    { q: 'Chlorine demand is calculated as:', o: ['Dose − residual', 'Residual − dose', 'Dose + residual', 'Residual ÷ dose'], a: 0, e: 'Demand is the chlorine that reacted and was used up: what you added minus what is left.' },
+    { q: 'Which test is used to measure free and total chlorine?', o: ['DPD colorimetric test', 'Jar test', 'Phenolphthalein titration', 'Turbidity test'], a: 0, e: 'DPD turns pink in proportion to chlorine. Free is read first, then total.' },
+    { q: 'Combined chlorine is mostly made of:', o: ['Chloramines', 'Hypochlorous acid (HOCl)', 'Chloride ions (Cl⁻)', 'Hypochlorite ions (OCl⁻)'], a: 0, e: 'Combined chlorine forms when chlorine reacts with ammonia, making chloramines. HOCl and OCl⁻ are free chlorine.' }
+  ]},
+  m2: { reward: 'amber', qs: [
+    { q: 'In Phase 1, the chlorine is used up by:', o: ['Reducing agents like Fe²⁺, Mn²⁺ and H₂S', 'Ammonia', 'Chloride ions', 'Dissolved oxygen'], a: 0, e: 'Reducing agents give electrons to chlorine, turning it into powerless chloride (Cl⁻).' },
+    { q: 'The combined peak happens at about what Cl₂ : NH₃-N weight ratio?', o: ['5 : 1', '1 : 1', '7.6 : 1', '15 : 1'], a: 0, e: '5:1 by weight is one chlorine for each ammonia molecule. All the ammonia is now monochloramine.' },
+    { q: 'In Phase 3, as you add more chlorine the residual:', o: ['Goes down', 'Goes up 1:1', 'Stays exactly the same', 'Turns into free chlorine immediately'], a: 0, e: 'Extra chlorine destroys the chloramines, turning nitrogen into N₂ gas and chlorine into chloride, so the residual drops.' }
+  ]},
+  m3: { reward: 'colorimeter', qs: [
+    { q: 'The theoretical breakpoint ratio (Cl₂ : NH₃-N by weight) is about:', o: ['7.6 : 1', '5 : 1', '3 : 1', '20 : 1'], a: 0, e: 'Theory says 7.6:1. Real water usually needs 8–10:1 or more.' },
+    { q: 'How much chlorine does 1 mg/L of ferrous iron (Fe²⁺) use?', o: ['About 0.64 mg/L', 'About 2.1 mg/L', 'About 5 mg/L', 'About 7.6 mg/L'], a: 0, e: 'Iron uses about 0.64 mg Cl₂ per mg Fe²⁺. H₂S uses about 2.1 mg per mg (oxidized to sulfur).' },
+    { q: 'Past the breakpoint, adding 1 mg/L more chlorine raises free chlorine by about:', o: ['1 mg/L', '0 mg/L', '5 mg/L', '0.1 mg/L'], a: 0, e: 'In Phase 4 the demand is already met, so free residual rises roughly 1:1 with dose.' }
+  ]}
+};
+
+function initQuiz(m) {
+  const wrap = $('#quiz-' + m), body = $('#body-' + m);
+  if (prog.quizzes[m] !== undefined) {
+    wrap.innerHTML = `<div class="card row" style="justify-content:space-between"><span class="muted">Pre-quiz done: ${prog.quizzes[m]}/3</span></div>`;
+    body.hidden = false; onModuleOpen(m); return;
+  }
+  body.hidden = true;
+  const qs = QUIZ[m].qs.map(q => { const order = shuffle(q.o.map((t, i) => i)); return { ...q, order }; });
+  let i = 0, score = 0;
+  function show() {
+    const q = qs[i];
+    wrap.innerHTML = `<div class="card"><div class="qnum">Pre-quiz · Question ${i + 1} of 3</div><h2 style="margin:6px 0 10px">${q.q}</h2>
+      <div id="opts">${q.order.map(oi => `<button class="opt" data-i="${oi}">${q.o[oi]}</button>`).join('')}</div><div id="qfb"></div></div>`;
+    $$('#opts .opt', wrap).forEach(btn => btn.onclick = () => {
+      const pick = +btn.dataset.i, ok = pick === q.a;
+      if (ok) score++;
+      $$('#opts .opt', wrap).forEach(b => { b.disabled = true; if (+b.dataset.i === q.a) b.classList.add('correct'); else if (b === btn) b.classList.add('wrong'); });
+      $('#qfb', wrap).innerHTML = `<div class="msg ${ok ? 'good' : 'bad'}"><b>${ok ? 'Correct.' : 'Not quite.'}</b> ${q.e}</div>
+        <div class="row" style="margin-top:10px"><button class="primary" id="qnext">${i < 2 ? 'Next question' : 'See result'}</button></div>`;
+      $('#qnext', wrap).onclick = () => { i++; if (i < 3) show(); else finish(); };
+    });
+  }
+  function finish() {
+    prog.quizzes[m] = score; saveProg();
+    let rewardTxt;
+    if (score === 3) { award(QUIZ[m].reward); rewardTxt = `${ITEMS[QUIZ[m].reward].ic} ${ITEMS[QUIZ[m].reward].name}`; }
+    else if (score === 2) { award('gloves'); rewardTxt = `${ITEMS.gloves.ic} ${ITEMS.gloves.name}`; }
+    else { prog.poop++; saveProg(); renderShelf(); rewardTxt = '💩'; }
+    wrap.innerHTML = `<div class="card"><h2>Score: ${score}/3</h2><p>Reward: ${rewardTxt}</p><button class="primary" id="qstart">Start the lab</button></div>`;
+    $('#qstart', wrap).onclick = () => { wrap.innerHTML = `<div class="card"><span class="muted">Pre-quiz done: ${score}/3</span></div>`; body.hidden = false; onModuleOpen(m); };
+  }
+  show();
+}
+function onModuleOpen(m) {
+  if (m === 'm1') m1Init();
+  if (m === 'm2' && !M2.started) m2Start();
+  if (m === 'm3' && !M3.started) m3Start();
+}
+
+/* ===================== Module 1 ===================== */
+const SCENARIOS = {
+  standard: { name: 'Standard surface water', fe: 0.6, mn: 0.05, h2s: 0, no2n: 0.05, nh3n: 0.5, orgN: 0.1, pH: 7.4, tempC: 18, bpRatio: 8.5, orgDemand: 0.2 }
+};
+const M1 = { w: SCENARIOS.standard, ct: 30, delay: 0.5, bottles: [], ran: false, marks: { p1: null, peak: null, bp: null }, markMode: null, revealed: false, chart: null, inited: false };
+const NB = 10;
+
+function m1Init() {
+  if (M1.inited) return; M1.inited = true;
+  if (!prog.items.includes('goggles')) setTimeout(() => award('goggles'), 3400);
+  const w = M1.w;
+  $('#m1Name').textContent = w.name;
+  const stats = [['Iron (Fe²⁺)', w.fe, 'mg/L'], ['Manganese (Mn²⁺)', w.mn, 'mg/L'], ['Hydrogen sulfide', w.h2s, 'mg/L'], ['Nitrite-N', w.no2n, 'mg/L'], ['Ammonia-N', w.nh3n, 'mg/L'], ['pH', w.pH, ''], ['Temperature', w.tempC, '°C']];
+  $('#m1Water').innerHTML = stats.map(s => `<div class="stat"><b>${s[1]} ${s[2]}</b><span>${s[0]}</span></div>`).join('');
+  $('#m1rows').innerHTML = Array.from({ length: NB }, (_, i) => `<tr>
+    <td>${i + 1}</td>
+    <td><input type="number" min="0" max="15" step="0.1" id="dose${i}" aria-label="Dose bottle ${i + 1}"></td>
+    <td id="free${i}">—</td><td id="tot${i}">—</td>
+    <td><input type="number" step="0.01" id="comb${i}" disabled aria-label="Combined bottle ${i + 1}"></td>
+    <td><input type="number" step="0.01" id="dem${i}" disabled aria-label="Demand bottle ${i + 1}"></td></tr>`).join('');
+  $('#m1fill').onclick = () => [0.3, 0.8, 1.5, 2.2, 3, 3.6, 4.4, 5.2, 6.5, 8].forEach((d, i) => $('#dose' + i).value = d);
+  $('#m1clear').onclick = () => { for (let i = 0; i < NB; i++) $('#dose' + i).value = ''; };
+  $('#m1run').onclick = m1Run;
+  $('#m1readFree').onclick = () => m1Read('free');
+  $('#m1readTotal').onclick = () => m1Read('total');
+  $('#m1check').onclick = m1CheckCalcs;
+  $('#m1ct').onchange = e => { M1.ct = +e.target.value; m1ResetRun('Contact time changed. Run the test again.'); };
+  $('#m1delay').onchange = e => { M1.delay = +e.target.value; };
+  $$('.markBtn').forEach(b => b.onclick = () => {
+    M1.markMode = b.dataset.mark;
+    $$('.markBtn').forEach(x => x.classList.toggle('active', x === b));
+  });
+  $('#m1checkMarks').onclick = m1CheckMarks;
+  m1Chart();
+}
+
+function m1ResetRun(note) {
+  M1.ran = false; M1.revealed = false; M1.bottles = []; M1.marks = { p1: null, peak: null, bp: null };
+  for (let i = 0; i < NB; i++) {
+    $('#free' + i).textContent = '—'; $('#tot' + i).textContent = '—';
+    ['comb', 'dem'].forEach(k => { const el = $('#' + k + i); el.value = ''; el.disabled = true; el.className = ''; });
+  }
+  ['#m1readFree', '#m1readTotal', '#m1check', '#m1checkMarks'].forEach(s => $(s).disabled = true);
+  $$('.markBtn').forEach(b => { b.disabled = true; b.classList.remove('active'); });
+  $('#m1calcMsg').innerHTML = ''; $('#m1markMsg').innerHTML = note ? `<div class="msg info">${note}</div>` : '';
+  m1Chart();
+}
+
+function m1Run() {
+  const doses = [];
+  for (let i = 0; i < NB; i++) {
+    const v = $('#dose' + i).value;
+    if (v === '' || isNaN(+v) || +v < 0 || +v > 15) { $('#m1runErr').textContent = `Enter a dose between 0 and 15 mg/L for bottle ${i + 1}.`; return; }
+    doses.push(r1(+v));
+  }
+  $('#m1runErr').textContent = '';
+  m1ResetRun();
+  const pg = $('#m1prog'), bar = pg.firstElementChild;
+  pg.style.display = 'block'; bar.style.transition = 'none'; bar.style.width = '0';
+  requestAnimationFrame(() => { bar.style.transition = 'width 1.2s linear'; bar.style.width = '100%'; });
+  $('#m1run').disabled = true;
+  setTimeout(() => {
+    M1.bottles = doses.map(d => ({ dose: d, state: ChlorineModel.residuals(d, M1.w, M1.ct), freeR: null, totalR: null, lateFree: false }));
+    M1.ran = true;
+    $('#m1run').disabled = false; pg.style.display = 'none';
+    $('#m1readFree').disabled = false; $('#m1readTotal').disabled = false;
+    toast(`Contact time (${M1.ct} min) complete. Read your samples.`);
+  }, 1300);
+}
+
+function pink(v) { return `rgba(255,70,160,${Math.min(1, 0.08 + v / 4)})`; }
+
+function m1Read(kind) {
+  M1.bottles.forEach((b, i) => {
+    const r = ChlorineModel.dpdRead(b.state, M1.delay);
+    if (kind === 'free') { b.freeR = r2(r.free); b.lateFree = M1.delay > 1; $('#free' + i).innerHTML = `<span class="swatch" style="background:${pink(b.freeR)}"></span>${f2(b.freeR)}`; }
+    else { b.totalR = r2(Math.max(r.total, b.freeR ?? 0)); $('#tot' + i).innerHTML = `<span class="swatch" style="background:${pink(b.totalR)}"></span>${f2(b.totalR)}`; }
+  });
+  if (M1.bottles.every(b => b.freeR !== null && b.totalR !== null)) {
+    M1.bottles.forEach(b => { if (b.totalR < b.freeR) b.totalR = b.freeR; });
+    M1.bottles.forEach((b, i) => $('#tot' + i).innerHTML = `<span class="swatch" style="background:${pink(b.totalR)}"></span>${f2(b.totalR)}`);
+    for (let i = 0; i < NB; i++) { $('#comb' + i).disabled = false; $('#dem' + i).disabled = false; }
+    $('#m1check').disabled = false;
+    $$('.markBtn').forEach(b => b.disabled = false); $('#m1checkMarks').disabled = false;
+    m1Chart();
+  }
+}
+
+function m1CheckCalcs() {
+  let ok = 0, filled = 0;
+  M1.bottles.forEach((b, i) => {
+    const ec = r2(b.totalR - b.freeR), ed = r2(b.dose - b.totalR);
+    [['comb', ec], ['dem', ed]].forEach(([k, exp]) => {
+      const el = $('#' + k + i), v = el.value;
+      if (v === '') { el.className = ''; return; }
+      filled++;
+      const good = Math.abs(+v - exp) <= 0.02;
+      el.className = good ? 'ok' : 'bad'; if (good) ok++;
+    });
+  });
+  const total = NB * 2;
+  $('#m1calcMsg').innerHTML = filled < total
+    ? `<div class="msg warn">${ok} correct so far. Fill in all ${total} boxes.</div>`
+    : `<div class="msg ${ok === total ? 'good' : 'warn'}">${ok}/${total} correct.${ok === total ? ' Nice work.' : ' Check red boxes: combined = total − free, demand = dose − total.'}</div>`;
+}
+
+function m1ModelCurve(xmax) {
+  const pts = { total: [], free: [] };
+  for (let d = 0; d <= xmax + 1e-9; d += 0.05) {
+    const s = ChlorineModel.residuals(d, M1.w, M1.ct);
+    pts.total.push({ x: r2(d), y: s.total }); pts.free.push({ x: r2(d), y: s.free });
+  }
+  return pts;
+}
+
+const overlayPlugin = {
+  id: 'overlay',
+  beforeDatasetsDraw(chart) {
+    const o = chart.$ov; if (!o || !o.zones) return;
+    const { ctx, chartArea: a, scales: { x } } = chart;
+    ctx.save();
+    o.zones.forEach(z => {
+      const x1 = Math.max(a.left, x.getPixelForValue(z.from)), x2 = Math.min(a.right, x.getPixelForValue(z.to));
+      if (x2 <= x1) return;
+      ctx.fillStyle = z.color; ctx.fillRect(x1, a.top, x2 - x1, a.bottom - a.top);
+      ctx.fillStyle = '#8fb4cc'; ctx.font = '12px system-ui,sans-serif'; if (ctx.measureText(z.label).width + 8 < x2 - x1) ctx.fillText(z.label, x1 + 4, a.top + 14);
+    });
+    ctx.restore();
+  },
+  afterDatasetsDraw(chart) {
+    const o = chart.$ov; if (!o || !o.marks) return;
+    const { ctx, chartArea: a, scales: { x } } = chart;
+    const names = { p1: 'End P1', peak: 'Peak', bp: 'Breakpoint' };
+    ctx.save(); ctx.strokeStyle = '#5fd38a'; ctx.fillStyle = '#5fd38a'; ctx.setLineDash([6, 4]); ctx.lineWidth = 2; ctx.font = '12px system-ui,sans-serif';
+    Object.entries(o.marks).forEach(([k, v], idx) => {
+      if (v === null) return;
+      const px = x.getPixelForValue(v); if (px < a.left || px > a.right) return;
+      ctx.beginPath(); ctx.moveTo(px, a.top); ctx.lineTo(px, a.bottom); ctx.stroke();
+      ctx.fillText(`${names[k]} ${v.toFixed(1)}`, Math.min(px + 4, a.right - 90), a.top + 30 + idx * 15);
+    });
+    ctx.restore();
+  }
+};
+
+function m1Chart() {
+  const canvas = $('#m1chart');
+  if (!canvas) return;
+  if (typeof Chart === 'undefined') { canvas.parentElement.innerHTML = '<div class="msg bad">Chart library could not load. Check your internet connection.</div>'; return; }
+  const read = M1.bottles.filter(b => b.freeR !== null && b.totalR !== null).sort((a, b) => a.dose - b.dose);
+  const xmax = Math.max(8, ...M1.bottles.map(b => b.dose)) + 0.5;
+  const ymax = Math.max(3, ...read.map(b => b.totalR)) + 1;
+  const ds = [
+    { label: 'Total', data: read.map(b => ({ x: b.dose, y: b.totalR })), borderColor: '#46c2a8', backgroundColor: '#46c2a8', showLine: true, tension: 0.25, pointRadius: 5 },
+    { label: 'Free', data: read.map(b => ({ x: b.dose, y: b.freeR })), borderColor: '#e3b341', backgroundColor: '#e3b341', showLine: true, tension: 0.25, pointRadius: 5 },
+    { label: 'Combined', data: read.map(b => ({ x: b.dose, y: r2(b.totalR - b.freeR) })), borderColor: '#8fb4cc', backgroundColor: '#8fb4cc', borderDash: [4, 4], showLine: true, tension: 0.25, pointRadius: 3 },
+    { label: 'No-demand line', data: [{ x: 0, y: 0 }, { x: xmax, y: xmax }], borderColor: '#e06a5c', borderDash: [6, 5], showLine: true, pointRadius: 0, borderWidth: 1.5 }
+  ];
+  if (M1.revealed) {
+    const mc = m1ModelCurve(xmax);
+    ds.push({ label: 'Model total', data: mc.total, borderColor: 'rgba(70,194,168,.45)', showLine: true, pointRadius: 0, borderWidth: 2 });
+    ds.push({ label: 'Model free', data: mc.free, borderColor: 'rgba(227,179,65,.45)', showLine: true, pointRadius: 0, borderWidth: 2 });
+  }
+  const tick = { color: '#5c8299' }, grid = { color: '#1d3f55' }, border = { color: '#23495f' };
+  const cfg = {
+    type: 'scatter',
+    data: { datasets: ds },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y.toFixed(2)} mg/L at dose ${c.parsed.x.toFixed(1)}` } } },
+      scales: {
+        x: { min: 0, max: xmax, title: { display: true, text: 'Chlorine dose (mg/L)', color: '#8fb4cc' }, ticks: tick, grid, border },
+        y: { min: 0, max: ymax, title: { display: true, text: 'Residual (mg/L)', color: '#8fb4cc' }, ticks: tick, grid, border }
+      },
+      onClick: (evt, els, chart) => {
+        if (!M1.markMode) return;
+        const v = chart.scales.x.getValueForPixel(evt.x);
+        M1.marks[M1.markMode] = Math.max(0, r1(v));
+        M1.markMode = null; $$('.markBtn').forEach(b => b.classList.remove('active'));
+        chart.$ov.marks = M1.marks; chart.update();
+      }
+    },
+    plugins: [overlayPlugin]
+  };
+  if (M1.chart) M1.chart.destroy();
+  M1.chart = new Chart(canvas, cfg);
+  M1.chart.$ov = { marks: M1.marks, zones: M1.revealed ? m1Zones(xmax) : null };
+  M1.chart.update();
+}
+
+function m1Zones(xmax) {
+  const L = ChlorineModel.landmarks(M1.w, M1.ct);
+  return [
+    { from: 0, to: L.phase1End, label: 'Phase 1', color: 'rgba(224,106,92,.10)' },
+    { from: L.phase1End, to: L.peakDose, label: 'Phase 2', color: 'rgba(143,180,204,.10)' },
+    { from: L.peakDose, to: L.breakpointDose, label: 'Phase 3', color: 'rgba(227,179,65,.10)' },
+    { from: L.breakpointDose, to: xmax, label: 'Phase 4', color: 'rgba(95,211,138,.10)' }
+  ];
+}
+
+function m1CheckMarks() {
+  const m = M1.marks;
+  if (m.p1 === null || m.peak === null || m.bp === null) { $('#m1markMsg').innerHTML = '<div class="msg warn">Place all three marks first.</div>'; return; }
+  const L = ChlorineModel.landmarks(M1.w, M1.ct);
+  const checks = [
+    ['End of Phase 1', m.p1, L.phase1End, 0.4, 'Below this dose, reducing agents (iron, manganese, nitrite) use up every bit of chlorine, so the residual stays near zero.'],
+    ['Combined peak', m.peak, L.peakDose, 0.6, 'Here all the ammonia has become monochloramine (about 5 mg Cl₂ per mg NH₃-N, after Phase 1 demand).'],
+    ['Breakpoint', m.bp, L.breakpointDose, 0.7, 'The lowest point of the dip. Chloramines are mostly destroyed; after a little more organic demand, free chlorine rises about 1:1.']
+  ];
+  let good = 0;
+  const lines = checks.map(([n, mine, truth, tol, why]) => {
+    const ok = Math.abs(mine - truth) <= tol; if (ok) good++;
+    return `<li><b>${n}</b>: your mark ${mine.toFixed(1)} mg/L, model ${truth.toFixed(1)} mg/L ${ok ? '✓' : '✗'}<br><span class="small muted">${why}</span></li>`;
+  });
+  const maxDose = Math.max(...M1.bottles.map(b => b.dose));
+  const notes = [];
+  if (maxDose < L.freeAppearsDose + 0.5) notes.push('Your highest dose barely reached (or did not reach) free chlorine. Add higher doses so you can see Phase 4 clearly.');
+  if (M1.bottles.some(b => b.lateFree && b.state.combined > 0.3)) notes.push('You read free chlorine after 3 minutes. Monochloramine slowly reacts with DPD, so your free readings in Phases 2–3 are falsely high. Read free within 1 minute.');
+  if (M1.ct < 30) notes.push('With only 10 minutes of contact time, Phase 3 destruction is unfinished: the dip is shallower and the breakpoint moves to a higher dose.');
+  M1.revealed = true; m1Chart();
+  $('#m1markMsg').innerHTML = `<div class="msg ${good === 3 ? 'good' : 'warn'}"><b>${good}/3 marks within range.</b><ul>${lines.join('')}</ul>
+    The shaded zones and faint model curves now show the true phases.${notes.length ? '<ul>' + notes.map(n => `<li>${n}</li>`).join('') + '</ul>' : ''}</div>
+    <div class="titus"><div class="av">Titus</div><div>Try changing the contact time to 10 or 60 minutes and running the test again. Watch how the dip and the breakpoint move.</div></div>`;
+  if (good >= 2 && !prog.done.m1) { prog.done.m1 = true; saveProg(); award('timer'); }
+  m1SaveExport();
+}
+
+function m1SaveExport() {
+  const bs = M1.bottles.map(b => ({ dose: b.dose, free: r2(b.state.free), combined: r2(b.state.combined), total: r2(b.state.total), hocFraction: r2(b.state.hoclFraction), phase: b.state.phase }));
+  const pick = bs.find(b => b.phase === 4 && b.free > 0.2) || bs[bs.length - 1];
+  const data = { scenario: M1.w.name, ...pick, contactTimeMin: M1.ct, tempC: M1.w.tempC, pH: M1.w.pH, bottles: bs, timestamp: new Date().toISOString() };
+  try { localStorage.setItem(EXPORT_KEY, JSON.stringify(data)); } catch (e) {}
+}
+
+/* ===================== Module 2 ===================== */
+const M2 = { started: false, cases: [], i: 0, score: 0 };
+const PHASE_WHY = {
+  1: 'Free and total are both near zero even though chlorine was added. Reducing agents are using it all up.',
+  2: 'Total is rising but free is near zero, and free ammonia is still present. Chlorine is being captured as chloramines.',
+  3: 'Free is near zero, no free ammonia is left, and there is a sharp pool smell from dichloramine. Chloramines are being destroyed.',
+  4: 'Free chlorine is clearly present and makes up most of the total. Demand is satisfied.'
+};
+function m2Water() { return { fe: 0.4, mn: 0.05, h2s: 0.2, no2n: 0.02, nh3n: r2(rand(0.4, 0.7)), orgN: 0.15, pH: r1(rand(7.0, 8.0)), tempC: 20, bpRatio: 8.5, orgDemand: 0.15 }; }
+function m2Case(phase) {
+  for (let tries = 0; tries < 20; tries++) {
+    const w = m2Water(), ct = 30, L = ChlorineModel.landmarks(w, ct);
+    let dose;
+    if (phase === 1) dose = L.phase1End * rand(0.3, 0.85);
+    else if (phase === 2) dose = L.phase1End + 5 * w.nh3n * rand(0.35, 0.8);
+    else if (phase === 3) dose = L.peakDose + (L.breakpointDose - L.peakDose) * rand(0.35, 0.75);
+    else dose = L.freeAppearsDose + rand(0.8, 2.2);
+    dose = r1(dose);
+    const s = ChlorineModel.residuals(dose, w, ct);
+    if (s.phase !== phase) continue;
+    const r = ChlorineModel.dpdRead(s, 0.5);
+    return { phase, w, dose, s, free: r2(r.free), total: r2(Math.max(r.total, r.free)) };
+  }
+}
+function m2Start() {
+  M2.started = true; M2.i = 0; M2.score = 0;
+  M2.cases = shuffle([1, 2, 3, 4, 1, 2, 3, 4]).map(m2Case);
+  m2Show();
+}
+function m2Show() {
+  const c = M2.cases[M2.i];
+  $('#m2case').innerHTML = `<div class="qnum">Sample ${M2.i + 1} of ${M2.cases.length} · Score ${M2.score}</div>
+    <div class="grid2 case" style="margin:10px 0">
+      <div class="stat"><b>${c.dose.toFixed(1)} mg/L</b><span>Chlorine dose</span></div>
+      <div class="stat"><b>${f2(c.free)} mg/L</b><span>Free chlorine (DPD)</span></div>
+      <div class="stat"><b>${f2(c.total)} mg/L</b><span>Total chlorine (DPD)</span></div>
+      <div class="stat"><b>${c.w.pH}</b><span>pH</span></div>
+      <div class="stat"><b>${c.s.odor}</b><span>Odor</span></div>
+      <div class="stat"><b>${c.s.freeAmmonia ? 'Present' : 'Not detected'}</b><span>Free ammonia test</span></div>
+    </div>
+    <div class="row" id="m2opts">${[1, 2, 3, 4].map(p => `<button data-p="${p}">Phase ${p}</button>`).join('')}<button id="m2hint">Hint</button></div>
+    <div id="m2fb"></div>`;
+  $('#m2hint').onclick = () => $('#m2fb').innerHTML = `<div class="titus"><div class="av">Titus</div><div>Compare free vs total first. Then check free ammonia and odor to tell Phase 2 from Phase 3.</div></div>`;
+  $$('#m2opts [data-p]').forEach(b => b.onclick = () => {
+    const ok = +b.dataset.p === c.phase; if (ok) M2.score++;
+    $$('#m2opts button').forEach(x => x.disabled = true);
+    $('#m2fb').innerHTML = `<div class="msg ${ok ? 'good' : 'bad'}"><b>${ok ? 'Correct' : 'Not quite'} — this is Phase ${c.phase}.</b> ${PHASE_WHY[c.phase]}
+      <br><span class="small muted">Combined = ${f2(c.total)} − ${f2(c.free)} = ${f2(c.total - c.free)} mg/L.</span></div>
+      <div class="row" style="margin-top:10px"><button class="primary" id="m2next">${M2.i < M2.cases.length - 1 ? 'Next sample' : 'Finish'}</button></div>`;
+    $('#m2next').onclick = () => { M2.i++; if (M2.i < M2.cases.length) m2Show(); else m2Finish(); };
+  });
+}
+function m2Finish() {
+  const n = M2.cases.length;
+  $('#m2case').innerHTML = `<div class="msg ${M2.score >= 6 ? 'good' : 'warn'}"><b>You identified ${M2.score}/${n} samples correctly.</b> ${M2.score >= 6 ? '' : 'Score 6 or more to earn the ammonia test kit.'}</div>
+    <div class="row" style="margin-top:10px"><button id="m2again">New set of samples</button></div>`;
+  $('#m2again').onclick = m2Start;
+  if (M2.score >= 6 && !prog.done.m2) { prog.done.m2 = true; saveProg(); award('nh3kit'); }
+  $('#m2hump').hidden = false; m2Hump();
+}
+function m2Hump() {
+  const w = { fe: 0.1, mn: 0, h2s: 0, no2n: 0, nh3n: 0.6, orgN: 0.1, pH: 7.6, tempC: 20, bpRatio: 8.5, orgDemand: 0.2 }, ct = 30;
+  const L = ChlorineModel.landmarks(w, ct);
+  const tot = d => ChlorineModel.residuals(d, w, ct).total;
+  const target = r2(tot(L.peakDose) * rand(0.6, 0.75));
+  const dl = bisect(tot, L.phase1End, L.peakDose, target, true);
+  const dr = bisect(tot, L.peakDose, L.breakpointDose, target, false);
+  const side = Math.random() < 0.5 ? 'left' : 'right';
+  const dose = side === 'left' ? dl : dr;
+  const s = ChlorineModel.residuals(dose, w, ct);
+  const bumped = ChlorineModel.residuals(dose + 0.5, w, ct).total;
+  const used = new Set();
+  $('#m2humpBody').innerHTML = `<p>A plant using free chlorine has water with ammonia. Sample A reads <b>total ${f2(target)} mg/L</b> and free about 0.0 mg/L. That total happens at <b>two</b> different doses, one on each side of the hump. Run one or more tests, then decide.</p>
+    <div class="row"><button data-t="bump">Raise the dose by 0.5 mg/L</button><button data-t="nh3">Test free ammonia</button><button data-t="odor">Smell the sample</button></div>
+    <div id="humpRes"></div>
+    <div class="row" style="margin-top:12px"><button data-s="left">Left side (Phase 2, before the peak)</button><button data-s="right">Right side (Phase 3, after the peak)</button></div>
+    <div id="humpFb"></div>`;
+  const res = $('#humpRes');
+  $$('#m2humpBody [data-t]').forEach(b => b.onclick = () => {
+    const t = b.dataset.t; if (used.has(t)) return; used.add(t); b.disabled = true;
+    let txt = '';
+    if (t === 'bump') txt = `New total after +0.5 mg/L: <b>${f2(bumped)} mg/L</b> (${bumped > target ? 'went up' : 'went down'}).`;
+    if (t === 'nh3') txt = `Free ammonia: <b>${s.freeAmmonia ? 'present' : 'not detected'}</b>.`;
+    if (t === 'odor') txt = `Odor: <b>${s.odor}</b>.`;
+    res.innerHTML += `<div class="msg info">${txt}</div>`;
+  });
+  $$('#m2humpBody [data-s]').forEach(b => b.onclick = () => {
+    if (!used.size) { $('#humpFb').innerHTML = '<div class="err">Run at least one test first.</div>'; return; }
+    const ok = b.dataset.s === side;
+    $$('#m2humpBody [data-s]').forEach(x => x.disabled = true);
+    $('#humpFb').innerHTML = `<div class="msg ${ok ? 'good' : 'bad'}"><b>${ok ? 'Correct.' : 'Not quite.'}</b> The sample was on the <b>${side} side</b> (dose ${dose.toFixed(1)} mg/L).
+      ${side === 'left' ? 'More chlorine raised the total, and free ammonia was still there to capture it.' : 'More chlorine lowered the total because it was destroying chloramines. No free ammonia was left, and dichloramine gave a sharp odor.'}
+      For a free chlorine plant, the fix is the same either way: keep increasing the dose to get past the breakpoint.</div>
+      <div class="row" style="margin-top:10px"><button id="humpAgain">Try another sample</button></div>`;
+    $('#humpAgain').onclick = m2Hump;
+  });
+}
+
+/* ===================== Module 3 ===================== */
+const M3 = { started: false, qs: [], i: 0, score: 0 };
+const GENS = [
+  () => { const d = r1(rand(2, 6)), res = r2(rand(0.3, 1.8)); return { q: `A plant doses <b>${d} mg/L</b> chlorine. After the contact time, the total residual is <b>${res} mg/L</b>. What is the chlorine demand?`, a: d - res, sol: `Demand = dose − residual = ${d} − ${res} = <b>${f2(d - res)} mg/L</b>` }; },
+  () => { const t = r2(rand(1, 3)), f = r2(rand(0.1, 0.9)); return { q: `A DPD test reads free chlorine <b>${f} mg/L</b> and total chlorine <b>${t} mg/L</b>. What is the combined chlorine?`, a: t - f, sol: `Combined = total − free = ${t} − ${f} = <b>${f2(t - f)} mg/L</b>` }; },
+  () => { const fe = r2(rand(0.2, 1)), mn = r2(rand(0.05, 0.3)), h = r2(rand(0, 0.6)); const a = 0.64 * fe + 1.3 * mn + 2.1 * h; return { q: `Well water contains Fe²⁺ <b>${fe} mg/L</b>, Mn²⁺ <b>${mn} mg/L</b> and H₂S <b>${h} mg/L</b>. Estimate the Phase 1 chlorine demand.`, a, sol: `0.64 × ${fe} + 1.3 × ${mn} + 2.1 × ${h} = ${f2(0.64 * fe)} + ${f2(1.3 * mn)} + ${f2(2.1 * h)} = <b>${f2(a)} mg/L</b>` }; },
+  () => { const p1 = r2(rand(0.2, 1.2)), n = r2(rand(0.3, 0.8)); const a = p1 + 5 * n; return { q: `Phase 1 demand is <b>${p1} mg/L</b> and ammonia-N is <b>${n} mg/L</b>. At about what chlorine dose is the combined peak?`, a, sol: `Peak dose ≈ Phase 1 + 5 × NH₃-N = ${p1} + 5 × ${n} = ${p1} + ${f2(5 * n)} = <b>${f2(a)} mg/L</b>` }; },
+  () => { const p1 = r2(rand(0.2, 1.2)), n = r2(rand(0.3, 0.8)); const a = p1 + 7.6 * n; return { q: `Phase 1 demand is <b>${p1} mg/L</b> and ammonia-N is <b>${n} mg/L</b>. What is the theoretical breakpoint dose?`, a, sol: `Breakpoint ≈ Phase 1 + 7.6 × NH₃-N = ${p1} + 7.6 × ${n} = ${p1} + ${f2(7.6 * n)} = <b>${f2(a)} mg/L</b>` }; },
+  () => { const p1 = r2(rand(0.2, 1)), n = r2(rand(0.2, 0.6)), tgt = r1(rand(0.5, 1.5)); const a = p1 + 7.6 * n + tgt; return { q: `Phase 1 demand is <b>${p1} mg/L</b>, ammonia-N is <b>${n} mg/L</b>, and the plant wants <b>${tgt} mg/L</b> free chlorine. Using the theoretical breakpoint, what dose is needed?`, a, sol: `Dose = Phase 1 + 7.6 × NH₃-N + target free = ${p1} + ${f2(7.6 * n)} + ${tgt} = <b>${f2(a)} mg/L</b>. Real water usually needs more (8–10:1).` }; }
+];
+function m3Start() { M3.started = true; M3.i = 0; M3.score = 0; M3.qs = GENS.map(g => g()); m3Show(); }
+function m3Show() {
+  const q = M3.qs[M3.i];
+  $('#m3q').innerHTML = `<div class="qnum">Question ${M3.i + 1} of ${M3.qs.length} · Score ${M3.score}</div>
+    <p class="case">${q.q}</p>
+    <div class="row"><input type="number" step="0.01" id="m3ans" aria-label="Your answer in mg/L"> <span class="muted">mg/L</span><button class="primary" id="m3sub">Check</button></div>
+    <div id="m3fb"></div>`;
+  const inp = $('#m3ans');
+  inp.oninput = () => { $('#m3fb').innerHTML = ''; };
+  inp.onkeydown = e => { if (e.key === 'Enter') $('#m3sub').click(); };
+  $('#m3sub').onclick = () => {
+    if (inp.value === '' || isNaN(+inp.value)) { $('#m3fb').innerHTML = '<div class="err">Enter a number first.</div>'; return; }
+    const ok = Math.abs(+inp.value - q.a) <= Math.max(0.05, 0.02 * q.a); if (ok) M3.score++;
+    inp.disabled = true; $('#m3sub').disabled = true;
+    $('#m3fb').innerHTML = `<div class="msg ${ok ? 'good' : 'bad'}"><b>${ok ? 'Correct.' : 'Not quite.'}</b> ${q.sol}</div>
+      <div class="row" style="margin-top:10px"><button class="primary" id="m3next">${M3.i < M3.qs.length - 1 ? 'Next question' : 'Finish'}</button></div>`;
+    $('#m3next').onclick = () => { M3.i++; if (M3.i < M3.qs.length) m3Show(); else m3Finish(); };
+  };
+}
+function m3Finish() {
+  $('#m3q').innerHTML = `<div class="msg ${M3.score >= 5 ? 'good' : 'warn'}"><b>${M3.score}/${M3.qs.length} correct.</b> ${M3.score >= 5 ? '' : 'Score 5 or more to earn the chlorine test kit.'}</div>
+    <div class="row" style="margin-top:10px"><button id="m3again">New numbers</button></div>`;
+  $('#m3again').onclick = m3Start;
+  if (M3.score >= 5 && !prog.done.m3) { prog.done.m3 = true; saveProg(); award('cl2kit'); }
+}
+
+/* ===================== Module 0: Curve explorer ===================== */
+const PRESETS = {
+  standard: { name: 'Standard surface water', fe: 0.6, mn: 0.05, h2s: 0, no2n: 0.05, nh3n: 0.5, orgN: 0.1, pH: 7.4, tempC: 18, bpRatio: 8.5, orgDemand: 0.2, ct: 30 },
+  well: { name: 'Groundwater well', fe: 1.2, mn: 0.2, h2s: 0.4, no2n: 0, nh3n: 0.3, orgN: 0.05, pH: 7.2, tempC: 14, bpRatio: 8.5, orgDemand: 0.15, ct: 30 },
+  snow: { name: 'Spring snowmelt (cold)', fe: 0.3, mn: 0.03, h2s: 0, no2n: 0.02, nh3n: 0.5, orgN: 0.1, pH: 7.2, tempC: 4, bpRatio: 8.5, orgDemand: 0.2, ct: 30 },
+  rain: { name: 'Autumn rain (runoff ammonia)', fe: 0.4, mn: 0.05, h2s: 0, no2n: 0.05, nh3n: 0.9, orgN: 0.2, pH: 7.0, tempC: 13, bpRatio: 9, orgDemand: 0.3, ct: 30 },
+  algae: { name: 'Summer algae bloom', fe: 0.2, mn: 0.05, h2s: 0, no2n: 0.05, nh3n: 0.4, orgN: 0.4, pH: 8.8, tempC: 25, bpRatio: 9.5, orgDemand: 0.4, ct: 30 },
+  clean: { name: 'Clean water, no ammonia', fe: 0.05, mn: 0, h2s: 0, no2n: 0, nh3n: 0, orgN: 0.05, pH: 7.5, tempC: 18, bpRatio: 8.5, orgDemand: 0.1, ct: 30 }
+};
+const M0_CTRL = [
+  ['nh3n', 'Ammonia-N', 0, 1.2, 0.05, 'mg/L'],
+  ['fe', 'Iron (Fe²⁺)', 0, 2, 0.05, 'mg/L'],
+  ['mn', 'Manganese (Mn²⁺)', 0, 0.5, 0.01, 'mg/L'],
+  ['h2s', 'Hydrogen sulfide', 0, 1, 0.05, 'mg/L'],
+  ['pH', 'pH', 6, 9.5, 0.1, ''],
+  ['tempC', 'Temperature', 1, 30, 1, '°C'],
+  ['ct', 'Contact time', 5, 120, 5, 'min']
+];
+const PHASE_INFO = {
+  1: ['Phase 1 · Reducing agents eat the chlorine', '#e06a5c', 'Iron, manganese, H₂S and nitrite give electrons to the chlorine and turn it into chloride (Cl⁻). That chloride has no disinfecting power, so the DPD test reads nothing.'],
+  2: ['Phase 2 · Chloramines forming', '#8fb4cc', 'Ammonia grabs each new bit of chlorine and holds it as chloramine. Total residual rises, but it is weak combined chlorine. Free chlorine stays near zero.'],
+  3: ['Phase 3 · Chloramines being destroyed', '#e3b341', 'All the ammonia is used up. Extra chlorine now breaks the chloramines into nitrogen gas and chloride, so the residual FALLS even though you keep adding chlorine. Sharp pool smell.'],
+  4: ['Phase 4 · Past the breakpoint: free chlorine', '#5fd38a', 'The demand is satisfied. Each extra mg/L of chlorine now shows up as free chlorine (HOCl + OCl⁻), the strong disinfectant.']
+};
+const M0 = { w: null, preset: 'standard', dose: 0, playing: false, raf: null, chart: null, curve: null, xmax: 10 };
+
+function m0Init() {
+  $('#m0presets').innerHTML = Object.entries(PRESETS).map(([k, v]) => `<button class="presetBtn" data-p="${k}">${v.name}</button>`).join('');
+  $$('#m0presets .presetBtn').forEach(b => b.onclick = () => m0Load(b.dataset.p));
+  $('#m0ctrl').innerHTML = M0_CTRL.map(([k, l, mn, mx, st, u]) => `<div class="stat ctrl"><span>${l}</span><b id="m0v_${k}"></b><input type="range" id="m0c_${k}" min="${mn}" max="${mx}" step="${st}" aria-label="${l}"></div>`).join('');
+  M0_CTRL.forEach(([k, , , , , u]) => {
+    $('#m0c_' + k).oninput = e => {
+      M0.w[k] = +e.target.value; $('#m0v_' + k).textContent = `${M0.w[k]} ${u}`;
+      $$('#m0presets .presetBtn').forEach(b => b.classList.remove('active'));
+      m0Rebuild();
+    };
+  });
+  $('#m0dose').oninput = e => { M0.dose = +e.target.value; m0Pause(); m0Update(); };
+  $('#m0play').onclick = () => M0.playing ? m0Pause() : m0Play();
+  $('#m0reset').onclick = () => { m0Pause(); M0.dose = 0; m0Update(); };
+  m0Load('standard');
+}
+function m0Load(k) {
+  M0.preset = k; M0.w = { ...PRESETS[k] };
+  $$('#m0presets .presetBtn').forEach(b => b.classList.toggle('active', b.dataset.p === k));
+  M0_CTRL.forEach(([key, , , , , u]) => { $('#m0c_' + key).value = M0.w[key]; $('#m0v_' + key).textContent = `${M0.w[key]} ${u}`; });
+  m0Pause(); M0.dose = 0; m0Rebuild();
+}
+function m0Rebuild() {
+  const w = M0.w, ct = w.ct, L = ChlorineModel.landmarks(w, ct);
+  M0.xmax = Math.max(8, Math.ceil(L.freeAppearsDose + 3));
+  const pts = { total: [], free: [], comb: [] };
+  for (let d = 0; d <= M0.xmax + 1e-9; d += 0.05) {
+    const st = ChlorineModel.residuals(d, w, ct);
+    pts.total.push({ x: r2(d), y: st.total }); pts.free.push({ x: r2(d), y: st.free }); pts.comb.push({ x: r2(d), y: st.combined });
+  }
+  M0.curve = pts; M0.L = L;
+  M0.dose = Math.min(M0.dose, M0.xmax);
+  const sl = $('#m0dose'); sl.max = M0.xmax;
+  m0Chart(); m0Update();
+}
+function m0Chart() {
+  const canvas = $('#m0chart'); if (!canvas) return;
+  if (typeof Chart === 'undefined') { canvas.parentElement.innerHTML = '<div class="msg bad">Chart library could not load. Check your internet connection.</div>'; return; }
+  const c = M0.curve, xmax = M0.xmax, L = M0.L, hasN = M0.w.nh3n >= 0.05;
+  const ymax = Math.ceil(Math.max(3, ...c.total.map(p => p.y)) + 0.5);
+  const faint = (col, dash) => ({ borderColor: col, showLine: true, pointRadius: 0, borderWidth: 2, borderDash: dash || [], tension: 0 });
+  const ds = [
+    { label: 'Total (path)', data: c.total, ...faint('rgba(70,194,168,.22)') },
+    { label: 'Free (path)', data: c.free, ...faint('rgba(227,179,65,.22)') },
+    { label: 'Combined (path)', data: c.comb, ...faint('rgba(143,180,204,.22)', [4, 4]) },
+    { label: 'Total', data: [], borderColor: '#46c2a8', showLine: true, pointRadius: 0, borderWidth: 3.5 },
+    { label: 'Free', data: [], borderColor: '#e3b341', showLine: true, pointRadius: 0, borderWidth: 3 },
+    { label: 'Combined', data: [], borderColor: '#8fb4cc', borderDash: [5, 4], showLine: true, pointRadius: 0, borderWidth: 2 },
+    { label: 'No-demand line', data: [{ x: 0, y: 0 }, { x: xmax, y: xmax }], borderColor: '#e06a5c', borderDash: [6, 5], showLine: true, pointRadius: 0, borderWidth: 1.5 },
+    { label: 'Total now', data: [], backgroundColor: '#46c2a8', borderColor: '#dcefff', borderWidth: 2, pointRadius: 8 },
+    { label: 'Free now', data: [], backgroundColor: '#e3b341', borderColor: '#dcefff', borderWidth: 2, pointRadius: 6 }
+  ];
+  const zones = hasN ? [
+    { from: 0, to: L.phase1End, label: 'Phase 1', color: 'rgba(224,106,92,.12)' },
+    { from: L.phase1End, to: L.peakDose, label: 'Phase 2', color: 'rgba(143,180,204,.10)' },
+    { from: L.peakDose, to: L.breakpointDose, label: 'Phase 3', color: 'rgba(227,179,65,.10)' },
+    { from: L.breakpointDose, to: xmax, label: 'Phase 4', color: 'rgba(95,211,138,.10)' }
+  ] : [
+    { from: 0, to: L.phase1End, label: 'Phase 1', color: 'rgba(224,106,92,.12)' },
+    { from: L.phase1End, to: xmax, label: 'Phase 4 (no ammonia, no hump)', color: 'rgba(95,211,138,.10)' }
+  ];
+  const tick = { color: '#5c8299' }, grid = { color: '#1d3f55' }, border = { color: '#23495f' };
+  if (M0.chart) M0.chart.destroy();
+  M0.chart = new Chart(canvas, {
+    type: 'scatter', data: { datasets: ds },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: { min: 0, max: xmax, title: { display: true, text: 'Chlorine dose (mg/L)', color: '#8fb4cc' }, ticks: tick, grid, border },
+        y: { min: 0, max: ymax, title: { display: true, text: 'Residual (mg/L)', color: '#8fb4cc' }, ticks: tick, grid, border }
+      }
+    },
+    plugins: [overlayPlugin]
+  });
+  M0.chart.$ov = { zones, marks: hasN ? { peak: r2(L.peakDose), bp: r2(L.breakpointDose) } : {}, zoneReveal: true };
+}
+function m0Update() {
+  const w = M0.w, d = M0.dose, st = ChlorineModel.residuals(d, w, w.ct);
+  $('#m0dose').value = d; $('#m0doseVal').textContent = `${d.toFixed(2)} mg/L`;
+  if (M0.chart) {
+    const upto = arr => arr.filter(p => p.x <= d + 1e-9).concat([{ x: d, y: null }]).filter(p => p.y !== null);
+    const ds = M0.chart.data.datasets;
+    ds[3].data = upto(M0.curve.total).concat([{ x: d, y: st.total }]);
+    ds[4].data = upto(M0.curve.free).concat([{ x: d, y: st.free }]);
+    ds[5].data = upto(M0.curve.comb).concat([{ x: d, y: st.combined }]);
+    ds[7].data = [{ x: d, y: st.total }];
+    ds[8].data = st.free > 0.01 ? [{ x: d, y: st.free }] : [];
+    M0.chart.update('none');
+  }
+  const ph = d <= 0 ? 1 : st.phase;
+  const [title, col, why] = PHASE_INFO[ph];
+  const hf = Math.round(st.hoclFraction * 100);
+  const notes = [];
+  if (ph === 1 && d > 0) notes.push(`Phase 1 demand for this water: ${f2(st.phase1Demand)} mg/L. ${f2(Math.max(0, st.phase1Demand - d))} mg/L more chlorine is needed before any residual appears.`);
+  if (ph === 3) notes.push(`Only ${Math.round(st.completion * 100)}% of the chloramine destruction can finish in ${w.ct} min at ${w.tempC} °C. Colder water or shorter contact time pushes the breakpoint to a higher dose.`);
+  if (ph === 4 && st.free > 0) notes.push(`At pH ${w.pH}, ${hf}% of the free chlorine is strong HOCl and ${100 - hf}% is weaker OCl⁻.`);
+  if (w.nh3n < 0.05) notes.push('No ammonia in this water, so there is no hump: after Phase 1, chlorine goes straight to free chlorine.');
+  $('#m0read').innerHTML = `<div class="row" style="align-items:flex-start;flex-wrap:nowrap">
+      <div class="beaker" title="DPD color"><div style="background:${pink(st.total)}"></div></div>
+      <div style="flex:1">
+        <p class="phaseTitle" style="color:${col}">${title}</p>
+        <p style="margin:0 0 10px">${why}</p>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="stat"><b>${d.toFixed(2)}</b><span>Dose (mg/L)</span></div>
+      <div class="stat"><b style="color:#e3b341">${f2(st.free)}</b><span>Free chlorine (mg/L)</span></div>
+      <div class="stat"><b style="color:#8fb4cc">${f2(st.combined)}</b><span>Combined chlorine (mg/L)</span></div>
+      <div class="stat"><b style="color:#46c2a8">${f2(st.total)}</b><span>Total residual (mg/L)</span></div>
+      <div class="stat"><b>${f2(Math.max(0, d - st.total))}</b><span>Demand = dose − total</span></div>
+      <div class="stat"><b>${st.freeAmmonia ? 'Present' : 'None'}</b><span>Free ammonia</span></div>
+      <div class="stat"><b>${st.odor}</b><span>Odor</span></div>
+    </div>
+    ${notes.map(n => `<div class="titus"><div class="av">Titus</div><div>${n}</div></div>`).join('')}`;
+}
+function m0Play() {
+  if (M0.dose >= M0.xmax - 0.01) M0.dose = 0;
+  M0.playing = true; $('#m0play').textContent = 'Pause';
+  const step = M0.xmax / 420;
+  const tickFn = () => {
+    if (!M0.playing) return;
+    M0.dose = Math.min(M0.xmax, M0.dose + step); m0Update();
+    if (M0.dose >= M0.xmax) { m0Pause(); return; }
+    M0.raf = requestAnimationFrame(tickFn);
+  };
+  M0.raf = requestAnimationFrame(tickFn);
+}
+function m0Pause() {
+  M0.playing = false; if (M0.raf) cancelAnimationFrame(M0.raf);
+  const b = $('#m0play'); if (b) b.textContent = M0.dose > 0 && M0.dose < M0.xmax ? 'Resume' : 'Play';
+}
+
+/* ===================== Virtual lab ===================== */
+const LAB_STORY = {
+  standard: 'Filtered river water. A little iron, some ammonia. A good place to start.',
+  well: 'Deep well water with little oxygen: lots of iron, manganese and rotten-egg H₂S. Expect a long Phase 1.',
+  snow: 'Ice-cold spring snowmelt (4 °C). Chlorine reactions are slow, so watch the contact time.',
+  rain: 'Autumn storm runoff washed farm ammonia into the river. Expect a tall hump.',
+  algae: 'Warm lake with an algae bloom: high pH and extra organic nitrogen. Watch the microbes.',
+  clean: 'Very clean water with no ammonia. Does the curve still have a hump?'
+};
+const LAB_TINT = { standard: 'rgba(70,150,210,.20)', well: 'rgba(150,140,90,.24)', snow: 'rgba(120,190,240,.18)', rain: 'rgba(150,120,80,.26)', algae: 'rgba(80,170,90,.26)', clean: 'rgba(90,170,230,.13)' };
+const LW = 480, LH = 540, GX0 = 72, GX1 = 408, GY0 = 104, GY1 = 502, SURF = 150, BX0 = 86, BX1 = 394, BY0 = 160, BY1 = 488, TIPX = 240, TIPY = 98;
+const LAB = { scen: 'standard', w: null, ct: 30, U: 0.1, parts: [], state: 'idle', plan: null, n: 0, spawned: 0, el: 0, spawnDur: 2, cT: 0, cDur: 5, stats: null, events: null, log: [], dpd: null, results: {}, chart: null, showModel: false, last: 0, uiT: 0, ctx: null, dose: 2, base: 0, stepwise: false, traceMax: {}, mc: null, ymax: 4 };
+const NEED = { fe: 'fe2', h2s: 'h2s', no2: 'no2', mn: 'mn2', form: 'nh3', destroy: 'nh2cl' };
+const LAB_MSG = {
+  fe: ['Phase 1 · Chlorine meets iron (Fe²⁺). The iron turns into orange-brown rust (Fe³⁺), and the chlorine becomes chloride (Cl⁻, grey). That chlorine is gone.', 'bad'],
+  h2s: ['Phase 1 · Chlorine meets hydrogen sulfide. It turns into pale sulfur, and the rotten-egg smell fades. The chlorine becomes Cl⁻.', 'bad'],
+  no2: ['Phase 1 · Chlorine oxidizes nitrite (NO₂⁻) to nitrate. A small dose of nitrite uses up a lot of chlorine.', 'bad'],
+  mn: ['Manganese is slow. Only during contact time is it turning into black MnO₂ specks.', 'warn'],
+  org: ['Some chlorine reacts with organic matter in the water and is used up (Cl⁻).', 'info'],
+  form: ['Phase 2 · Chlorine latches onto ammonia (NH₃), forming monochloramine (NH₂Cl). It still counts as residual, but it is weak combined chlorine.', 'info'],
+  destroy: ['Phase 3 · All the ammonia is taken, so new chlorine attacks the chloramines and N₂ gas bubbles escape. The residual is going DOWN even though you are adding chlorine.', 'warn'],
+  free: ['Phase 4 · Breakpoint passed! This chlorine has nothing left to react with, so it stays FREE: the strong disinfectant.', 'good'],
+  kill: ['Microbes are being killed. Disinfection is happening.', 'good']
+};
+
+function mkP(type, x, y) { return { type, x: x ?? rand(BX0 + 8, BX1 - 8), y: y ?? rand(BY0 + 8, BY1 - 8), vx: rand(-15, 15), vy: rand(-15, 15), fate: null, target: null, targeted: false, wait: 0, dwell: 0, alive: true, rot: rand(0, 6.28), flash: 0, ocl: false, dead: false, falling: false, seed: Math.random() }; }
+const pc = t => LAB.parts.filter(p => p.alive && p.type === t).length;
+
+function labInit() {
+  const cv = $('#labCanvas'), dpr = window.devicePixelRatio || 1;
+  cv.width = LW * dpr; cv.height = LH * dpr; LAB.ctx = cv.getContext('2d'); LAB.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  LAB.results = prog.labRes || {};
+  $('#labDose').value = LAB.dose;
+  $$('[data-dd]').forEach(b => b.onclick = () => { if (LAB.state !== 'ready') return; const v = r1(Math.min(10, Math.max(0.1, (+$('#labDose').value || 0) + +b.dataset.dd))); $('#labDose').value = v; $('#labDoseErr').textContent = ''; });
+  $('#labDose').oninput = () => { $('#labDoseErr').textContent = ''; };
+  $('#labDose').onkeydown = e => { if (e.key === 'Enter') labAdd(); };
+  $('#labCt').onchange = e => { LAB.ct = +e.target.value; labPbar(); labChart(); labCoach(); };
+  $('#labAdd').onclick = labAdd;
+  $('#labNew').onclick = () => { if (LAB.state === 'adding' || LAB.state === 'contact') return; labNewSample(); };
+  $('#labFree').onclick = () => labTest('free');
+  $('#labTotal').onclick = () => labTest('total');
+  $('#labModel').onclick = () => { LAB.showModel = !LAB.showModel; $('#labModel').textContent = LAB.showModel ? 'Hide whole curve' : 'Show whole curve'; labChart(); };
+  $('#labClear').onclick = () => { LAB.results[LAB.scen] = []; prog.labRes = LAB.results; saveProg(); labStage(); LAB.showModel = false; $('#labModel').textContent = 'Show whole curve'; labNotebook(); labChart(); labCoach(); };
+  labScenario(LAB_ORDER.find(k => labUnlocked(k) && !(prog.lab[k] || {}).done) || 'standard');
+  requestAnimationFrame(labLoop);
+}
+
+function labScenario(k) {
+  LAB.scen = k; LAB.w = { ...PRESETS[k] }; LAB.results[k] = LAB.results[k] || []; LAB.showModel = false; LAB.postMode = false; $('#labModel').textContent = 'Show whole curve';
+  labStepper();
+  const w = LAB.w;
+  const st = [['Iron (Fe²⁺)', w.fe, 'mg/L'], ['Manganese (Mn²⁺)', w.mn, 'mg/L'], ['Hydrogen sulfide', w.h2s, 'mg/L'], ['Nitrite-N', w.no2n, 'mg/L'], ['Ammonia-N', w.nh3n, 'mg/L'], ['pH', w.pH, ''], ['Temperature', w.tempC, '°C']];
+  $('#labWater').innerHTML = st.map(s => `<div class="stat"><b>${s[1]} ${s[2]}</b><span>${s[0]}</span></div>`).join('');
+  $('#labStory').innerHTML = `<b>${w.name}.</b> <span class="muted">${LAB_STORY[k]}</span>`;
+  $('#labMission').innerHTML = `<div class="msg info"><b>Mission:</b> find a dose that leaves <b>0.5–1.5 mg/L free chlorine</b> after the contact time. Test at least 6 doses to see the whole curve.</div>`;
+  labNewSample(); labPbar(); labNotebook(); labChart(); labCoach(); labStage();
+}
+
+function labNewSample() {
+  const w = LAB.w, U = LAB.U; LAB.parts = [];
+  const add = (t, k) => { for (let i = 0; i < k; i++) LAB.parts.push(mkP(t)); };
+  const cnt = { fe2: Math.round(0.64 * w.fe / U), h2s: Math.round(2.1 * w.h2s / U), no2: Math.round(5 * w.no2n / U), mn2: Math.round(1.3 * w.mn / U), nh3: Math.round(4.5 * w.nh3n / U) };
+  Object.entries(cnt).forEach(([t, k]) => add(t, k));
+  add('microbe', 8);
+  LAB.state = 'ready'; LAB.plan = null; LAB.spawned = 0; LAB.n = 0; LAB.base = 0; LAB.stepwise = false;
+  $('#labDose').value = LAB.dose; LAB.el = 0; LAB.cT = 0; LAB.dpd = null;
+  LAB.stats = { red: 0, org: 0, form: 0, destroy: 0 }; LAB.events = new Set(); LAB.log = [];
+  const names = { fe2: 'iron', h2s: 'H₂S', no2: 'nitrite', mn2: 'manganese', nh3: 'ammonia' };
+  const seen = Object.entries(cnt).filter(([, k]) => k > 0).map(([t, k]) => `${k} ${names[t]}`).join(', ');
+  narrate(`Fresh 1 L sample of ${w.name.toLowerCase()}. In the beaker: ${seen || 'almost nothing'} dots, plus 8 microbes. Set a dose and add chlorine.`, 'info');
+  renderVials(); labUI();
+}
+
+function labPlan(dose) {
+  const w = LAB.w, ct = LAB.ct, U = LAB.U, S = LAB.stats, st = ChlorineModel.residuals(dose, w, ct);
+  const n = Math.max(1, Math.round((dose - LAB.base) / U));
+  const mnTotal = Math.max(0, Math.round((st.phase1Demand - 0.64 * w.fe - 2.1 * w.h2s - 5 * w.no2n) / U));
+  const Dn = Math.max(0, dose - st.phase1Demand);
+  const formTarget = Math.round(Math.min(Dn, 5 * w.nh3n) / U * 0.9);
+  const freeC = Math.round(st.free / U), endComb = Math.round(st.combined / U);
+  const f1 = LAB.parts.filter(p => p.alive && p.type === 'hocl' && p.fate === 'free').length;
+  const g = { fe: pc('fe2'), h2s: pc('h2s'), no2: pc('no2'), mn: Math.max(0, Math.min(pc('mn2'), mnTotal - pc('mno2'))) };
+  g.form = Math.max(0, Math.min(pc('nh3'), formTarget - S.form));
+  g.destroy = Math.max(0, pc('nh2cl') + g.form - endComb);
+  g.free = Math.max(0, freeC - f1);
+  const fates = [], push = (f, k) => { for (let j = 0; j < k && fates.length < n; j++) fates.push(f); };
+  push('fe', g.fe); push('h2s', g.h2s); push('no2', g.no2); push('mn', g.mn); push('form', g.form);
+  const left = n - fates.length;
+  push('org', left - Math.min(left, g.destroy + g.free));
+  push('destroy', g.destroy); push('free', n - fates.length);
+  const cDur = 3.5 + ct / 30 * 1.5;
+  const power = (st.free * (0.15 + 0.85 * st.hoclFraction) + st.combined * 0.03) * ct;
+  const killed = Math.round(8 * Math.min(1, power / 12));
+  const dead = LAB.parts.filter(p => p.alive && p.type === 'microbe' && p.dead).length;
+  const kills = Array.from({ length: Math.max(0, killed - dead) }, () => rand(0.12, 0.92) * cDur).sort((a, b) => a - b);
+  return { st, fates, cDur, killed: Math.max(killed, dead), kills, dose };
+}
+
+function labAdd() {
+  const more = LAB.state === 'test' || LAB.state === 'done';
+  if (LAB.state !== 'ready' && !more) return;
+  const v = $('#labDose').value;
+  if (v === '' || isNaN(+v) || +v < 0.1) { $('#labDoseErr').textContent = 'Enter at least 0.1 mg/L.'; return; }
+  if (!more && +v > 10) { $('#labDoseErr').textContent = 'Enter a dose between 0.1 and 10 mg/L.'; return; }
+  if (more && LAB.dose + +v > 10.001) { $('#labDoseErr').textContent = `This beaker already has ${LAB.dose} mg/L. You can add up to ${r1(10 - LAB.dose)} mg/L more.`; return; }
+  const inc = r1(+v);
+  LAB.base = more ? LAB.dose : 0;
+  if (more) { LAB.stepwise = true; LAB.dpd = null; renderVials(); }
+  LAB.dose = r1(LAB.base + inc);
+  LAB.plan = labPlan(LAB.dose); LAB.n = LAB.plan.fates.length; LAB.spawned = 0; LAB.el = 0; LAB.cDur = LAB.plan.cDur;
+  LAB.spawnDur = Math.min(4.5, Math.max(1.5, LAB.n / 22));
+  LAB.state = 'adding';
+  narrate(more ? `Adding ${inc} mg/L more chlorine (${LAB.n} green dots). Total dose in this beaker: ${LAB.dose} mg/L.` : `Adding ${LAB.dose} mg/L of chlorine: ${LAB.n} green dots.`, 'info');
+  labUI();
+}
+
+function labStep(dt) {
+  const P = LAB.plan;
+  if (LAB.state === 'adding') {
+    LAB.el += dt;
+    const want = Math.min(LAB.n, Math.floor(LAB.el / LAB.spawnDur * LAB.n) + 1);
+    while (LAB.spawned < want) {
+      const f = P.fates[LAB.spawned], p = mkP('hocl', TIPX + rand(-3, 3), TIPY);
+      p.vx = rand(-14, 14); p.vy = 150; p.fate = f; p.falling = true;
+      if (f === 'free') p.ocl = Math.random() > P.st.hoclFraction;
+      LAB.parts.push(p); LAB.spawned++;
+    }
+    if (LAB.spawned >= LAB.n && LAB.el > LAB.spawnDur + 1.8) labStartContact();
+  } else if (LAB.state === 'contact') {
+    LAB.cT += dt;
+    while (P.kills.length && LAB.cT >= P.kills[0]) { P.kills.shift(); labKill(); }
+    if (LAB.cT >= LAB.cDur) labEndContact();
+  }
+  for (const p of LAB.parts) if (p.alive) labMove(p, dt);
+  if (LAB.parts.length > 300) LAB.parts = LAB.parts.filter(p => p.alive);
+}
+
+function labStartContact() {
+  LAB.state = 'contact'; LAB.cT = 0;
+  narrate(`Contact time started: ${LAB.ct} min at ${LAB.w.tempC} °C. Slow reactions keep going while you wait.`, 'info');
+  if (LAB.dose <= LAB.plan.st.phase1Demand + 0.05) narrate('Every bit of your chlorine was used up by reducing agents. Expect a residual near zero.', 'bad');
+}
+
+function labEndContact() {
+  labSnap(); while (LAB.plan.kills.length) { LAB.plan.kills.shift(); labKill(); }
+  LAB.state = 'test';
+  const st = LAB.plan.st, k = LAB.plan.killed;
+  let m = `Contact time over. Microbes killed: ${k} of 8.`;
+  if (st.total < 0.05) m += ' No residual was left to disinfect.';
+  else if (st.free < 0.05 && st.combined > 0.3) m += ' Only weak chloramines were present, and they kill slowly.';
+  else if (st.free > 0.2 && st.hoclFraction < 0.3) m += ` At pH ${LAB.w.pH} most free chlorine is weak OCl⁻ (hollow dots), so killing is slower.`;
+  narrate(m + ' Now run the DPD tests.', k >= 7 ? 'good' : 'warn');
+  $('#labDose').value = 1;
+  labUI();
+}
+
+function labSnap() {
+  for (const p of LAB.parts) {
+    if (!p.alive || p.type !== 'hocl' || !p.fate || p.fate === 'free') continue;
+    p.falling = false;
+    if (p.fate === 'org') { labReact(p, null); continue; }
+    if (!p.target || !p.target.alive) { const t = labFind(p, true); if (t) { t.targeted = true; p.target = t; } }
+    if (p.target) labReact(p, p.target); else { p.fate = 'org'; labReact(p, null); }
+  }
+}
+
+function labFind(p, force) {
+  if (p.fate === 'mn' && LAB.state === 'adding' && !force) return null;
+  const need = NEED[p.fate]; let best = null, bd = 1e12;
+  for (const q of LAB.parts) { if (!q.alive || q.type !== need || q.targeted) continue; const d = (q.x - p.x) ** 2 + (q.y - p.y) ** 2; if (d < bd) { bd = d; best = q; } }
+  return best;
+}
+
+function labReact(p, t) {
+  const f = p.fate, S = LAB.stats; p.fate = null; p.target = null; p.dwell = 0;
+  if (f === 'org') { p.type = 'cl'; S.org++; ev('org'); return; }
+  if (f === 'fe') { t.type = 'rust'; S.red++; ev('fe'); }
+  else if (f === 'h2s') { t.type = 'sulfur'; S.red++; ev('h2s'); }
+  else if (f === 'no2') { t.alive = false; S.red++; ev('no2'); }
+  else if (f === 'mn') { t.type = 'mno2'; S.red++; ev('mn'); }
+  else if (f === 'form') { t.type = 'nh2cl'; t.targeted = false; t.flash = 1; p.alive = false; S.form++; ev('form'); return; }
+  else if (f === 'destroy') { t.alive = false; const b = mkP('n2', t.x, t.y); b.vy = -55; LAB.parts.push(b); S.destroy++; ev('destroy'); }
+  if (t) { t.targeted = false; t.flash = 1; }
+  p.type = 'cl'; p.vx *= 0.3; p.vy *= 0.3;
+}
+
+function labKill() {
+  const alive = LAB.parts.filter(p => p.alive && p.type === 'microbe' && !p.dead);
+  if (!alive.length) return;
+  const m = alive[Math.floor(Math.random() * alive.length)]; m.dead = true; m.flash = 1; ev('kill');
+}
+
+function brown(p, dt, sp) {
+  p.vx += rand(-1, 1) * sp * 3 * dt; p.vy += rand(-1, 1) * sp * 3 * dt;
+  const v = Math.hypot(p.vx, p.vy); if (v > sp) { p.vx *= sp / v; p.vy *= sp / v; }
+  p.x += p.vx * dt; p.y += p.vy * dt;
+  if (p.x < BX0) { p.x = BX0; p.vx = Math.abs(p.vx); } if (p.x > BX1) { p.x = BX1; p.vx = -Math.abs(p.vx); }
+  if (p.y < BY0) { p.y = BY0; p.vy = Math.abs(p.vy); } if (p.y > BY1) { p.y = BY1; p.vy = -Math.abs(p.vy); }
+}
+
+function labMove(p, dt) {
+  if (p.flash > 0) p.flash -= dt * 1.6;
+  if (p.falling) {
+    p.vy += 220 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    if (p.y >= SURF + 8) { p.falling = false; p.vy = rand(20, 60); if (p.fate === 'free') ev('free'); }
+    return;
+  }
+  const t = p.type;
+  if (t === 'n2') { p.y += p.vy * dt; p.x += Math.sin(p.y / 8) * 0.7; if (p.y < SURF + 2) p.alive = false; return; }
+  if (t === 'rust' || t === 'mno2') { if (p.y < BY1 + 4) { p.y += 20 * dt; p.x += rand(-6, 6) * dt; } return; }
+  if (t === 'hocl' && p.fate && p.fate !== 'free') {
+    if (p.fate === 'org') { p.wait += dt; if (p.wait > 0.6 + p.seed * 1.2) labReact(p, null); else brown(p, dt, 50); return; }
+    if (p.target && !p.target.alive) p.target = null;
+    if (!p.target) { const tg = labFind(p); if (tg) { tg.targeted = true; p.target = tg; } }
+    if (p.target) {
+      const dx = p.target.x - p.x, dy = p.target.y - p.y, d = Math.hypot(dx, dy);
+      if (d < 11) {
+        if (p.fate === 'destroy') { p.dwell += dt; p.x = p.target.x + Math.sin(p.dwell * 40) * 3; p.y = p.target.y - 9; if (p.dwell > 0.5) labReact(p, p.target); }
+        else labReact(p, p.target);
+      } else { const sp = 170; p.x += dx / d * sp * dt; p.y += dy / d * sp * dt; }
+      return;
+    }
+  }
+  brown(p, dt, t === 'microbe' ? 16 : (t === 'cl' || t === 'sulfur') ? 22 : 38);
+  if (t === 'microbe') p.rot += dt * 0.6;
+}
+
+function ev(name) {
+  if (LAB.events.has(name)) return;
+  LAB.events.add(name); const [m, c] = LAB_MSG[name]; narrate(m, c);
+}
+function narrate(text, cls) {
+  LAB.log.unshift({ text, cls }); LAB.log = LAB.log.slice(0, 7);
+  const col = { good: 'var(--green)', bad: 'var(--red)', warn: 'var(--gold)', info: 'var(--teal)' };
+  const cap = $('#labCaption'); if (cap) { cap.innerHTML = text; cap.style.borderLeftColor = col[cls] || 'var(--border)'; }
+  $('#labNarr').innerHTML = LAB.log.map((l, i) => `<div class="narr" style="border-left-color:${col[l.cls] || 'var(--border)'};opacity:${i ? 0.72 : 1}">${l.text}</div>`).join('');
+}
+
+/* ---- drawing ---- */
+function txt(c, s, col, size) { c.fillStyle = col; c.font = `600 ${size || 9}px system-ui,sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(s, 0, 0.5); }
+function circ(c, r, fill, stroke, lw) { c.beginPath(); c.arc(0, 0, r, 0, 6.2832); if (fill) { c.fillStyle = fill; c.fill(); } if (stroke) { c.strokeStyle = stroke; c.lineWidth = lw || 1; c.stroke(); } }
+function tri(c, r, fill) { c.beginPath(); c.moveTo(0, -r); c.lineTo(r * 0.95, r * 0.7); c.lineTo(-r * 0.95, r * 0.7); c.closePath(); c.fillStyle = fill; c.fill(); }
+function drawP(c, p) {
+  c.save(); c.translate(p.x, p.y);
+  if (p.flash > 0) { c.beginPath(); c.arc(0, 0, 10 + (1 - p.flash) * 10, 0, 6.2832); c.strokeStyle = `rgba(255,255,255,${Math.max(0, p.flash) * 0.6})`; c.lineWidth = 2; c.stroke(); }
+  switch (p.type) {
+    case 'hocl': if (p.ocl) { circ(c, 6, '#0f2230', '#39d98a', 2); txt(c, 'Cl', '#39d98a', 8); } else { circ(c, 6.5, '#39d98a'); txt(c, 'Cl', '#06231c', 8); } break;
+    case 'cl': c.globalAlpha = 0.7; circ(c, 2.4, '#7a93a6'); break;
+    case 'fe2': circ(c, 7, '#f6b26b'); txt(c, 'Fe', '#3a1d00'); break;
+    case 'rust': c.fillStyle = '#b4531f'; [[-2, 0, 4], [2, -2, 3.5], [1, 2, 3]].forEach(([x, y, r]) => { c.beginPath(); c.arc(x, y, r, 0, 6.2832); c.fill(); }); break;
+    case 'mn2': circ(c, 7, '#f08ad6'); txt(c, 'Mn', '#3d0a30', 8); break;
+    case 'mno2': c.fillStyle = '#161616'; c.strokeStyle = '#777'; [[-1.5, 0, 3.5], [2, -1, 3]].forEach(([x, y, r]) => { c.beginPath(); c.arc(x, y, r, 0, 6.2832); c.fill(); c.stroke(); }); break;
+    case 'h2s': circ(c, 7, '#ffe066'); txt(c, 'S', '#3a2e00'); break;
+    case 'sulfur': c.globalAlpha = 0.6; circ(c, 4, '#fff4c2'); break;
+    case 'no2': circ(c, 6.5, '#d3dde8'); txt(c, 'NO₂', '#1d2b38', 7); break;
+    case 'nh3': tri(c, 9, '#4aa3ff'); c.translate(0, 2); txt(c, 'N', '#ffffff'); break;
+    case 'nh2cl': tri(c, 9, '#4aa3ff'); c.save(); c.translate(0, 2); txt(c, 'N', '#ffffff'); c.restore(); c.translate(9, -7); circ(c, 4.5, '#39d98a', '#0f2230', 1); break;
+    case 'n2': circ(c, 5.5, null, 'rgba(230,244,255,.85)', 1.5); break;
+    case 'microbe':
+      c.rotate(p.rot); c.beginPath(); c.moveTo(-5, -4.5); c.arcTo(-10, -4.5, -10, 0, 4.5); c.arcTo(-10, 4.5, -5, 4.5, 4.5); c.lineTo(5, 4.5); c.arcTo(10, 4.5, 10, 0, 4.5); c.arcTo(10, -4.5, 5, -4.5, 4.5); c.closePath();
+      c.fillStyle = p.dead ? '#56616a' : '#b48cff'; c.fill();
+      c.strokeStyle = p.dead ? '#2a3238' : '#d9c6ff'; c.lineWidth = 1.2; c.beginPath();
+      if (p.dead) { c.moveTo(-4, -3); c.lineTo(4, 3); c.moveTo(4, -3); c.lineTo(-4, 3); } else { c.moveTo(10, 0); c.quadraticCurveTo(14, -3, 17, 1); }
+      c.stroke(); break;
+  }
+  c.restore();
+}
+function waterPath(c, x0, y0, x1, y1, r) { c.beginPath(); c.moveTo(x0, y0); c.lineTo(x0, y1 - r); c.arcTo(x0, y1, x0 + r, y1, r); c.lineTo(x1 - r, y1); c.arcTo(x1, y1, x1, y1 - r, r); c.lineTo(x1, y0); }
+function labDraw() {
+  const c = LAB.ctx; if (!c) return;
+  c.clearRect(0, 0, LW, LH);
+  waterPath(c, GX0 + 3, SURF, GX1 - 3, GY1 - 3, 18); c.closePath(); c.fillStyle = LAB_TINT[LAB.scen]; c.fill();
+  const rust = pc('rust'); if (rust) { c.fillStyle = `rgba(180,90,30,${Math.min(0.16, rust * 0.012)})`; c.fill(); }
+  const sulf = pc('sulfur'); if (sulf) { c.fillStyle = `rgba(255,250,220,${Math.min(0.12, sulf * 0.01)})`; c.fill(); }
+  c.strokeStyle = 'rgba(160,210,240,.5)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(GX0 + 3, SURF); c.lineTo(GX1 - 3, SURF); c.stroke();
+  c.strokeStyle = 'rgba(220,239,255,.35)'; c.lineWidth = 1; c.fillStyle = '#8fb4cc'; c.font = '10px system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
+  for (let i = 0; i <= 4; i++) { const y = SURF + i * ((GY1 - 30 - SURF) / 4); c.beginPath(); c.moveTo(GX1 - 18, y); c.lineTo(GX1 - 6, y); c.stroke(); }
+  c.fillText('1 L', GX1 - 40, SURF - 10);
+  const order = ['rust', 'mno2', 'cl', 'sulfur', 'microbe', 'nh3', 'nh2cl', 'no2', 'fe2', 'mn2', 'h2s', 'hocl', 'n2'];
+  for (const t of order) for (const p of LAB.parts) if (p.alive && p.type === t) drawP(c, p);
+  waterPath(c, GX0, GY0, GX1, GY1, 22); c.strokeStyle = 'rgba(220,239,255,.6)'; c.lineWidth = 3; c.stroke();
+  c.beginPath(); c.moveTo(GX0 - 10, GY0); c.lineTo(GX0, GY0); c.moveTo(GX1, GY0); c.lineTo(GX1 + 10, GY0); c.stroke();
+  const lvl = LAB.state === 'ready' ? 1 : LAB.state === 'adding' ? 1 - LAB.spawned / Math.max(1, LAB.n) : 0;
+  c.strokeStyle = 'rgba(220,239,255,.6)'; c.lineWidth = 2;
+  c.fillStyle = 'rgba(57,217,138,.55)'; c.fillRect(229, 72 - 62 * lvl, 22, 62 * lvl);
+  c.strokeRect(228, 6, 24, 66);
+  c.beginPath(); c.moveTo(228, 72); c.lineTo(238, 94); c.lineTo(242, 94); c.lineTo(252, 72); c.stroke();
+  c.fillStyle = '#8fb4cc'; c.font = '11px system-ui,sans-serif'; c.textAlign = 'left'; c.fillText('Chlorine (NaOCl)', 262, 24);
+  if (LAB.state === 'contact' || LAB.state === 'test' || LAB.state === 'done') {
+    const m = LAB.state === 'contact' ? Math.min(LAB.ct, Math.round(LAB.cT / LAB.cDur * LAB.ct)) : LAB.ct;
+    c.fillStyle = '#e3b341'; c.font = '600 13px system-ui,sans-serif'; c.fillText(`⏱ ${m} / ${LAB.ct} min`, 18, 24);
+  }
+}
+
+/* ---- side panels ---- */
+function labCum() { return LAB.state === 'adding' ? LAB.base + LAB.spawned * LAB.U : (LAB.state === 'ready' ? 0 : LAB.dose); }
+function labUI() {
+  const st = LAB.state, cum = labCum();
+  const canAdd = st === 'ready' || st === 'test' || st === 'done', more = st === 'test' || st === 'done';
+  $('#labAdd').disabled = !canAdd; $('#labAdd').textContent = more ? 'Add more chlorine' : 'Add chlorine';
+  $('#labDose').disabled = !canAdd; $$('[data-dd]').forEach(b => b.disabled = !canAdd);
+  $('#labDoseUnit').textContent = more ? 'mg/L more' : 'mg/L';
+  $('#labHint').innerHTML = st === 'ready' ? 'Type the total chlorine dose for this fresh 1 L sample.'
+    : more ? `This beaker has <b>${LAB.dose} mg/L</b>. Add more chlorine to keep moving through the phases, or press New sample to test a different dose in a fresh bottle.` : '';
+  $('#labCt').disabled = st !== 'ready';
+  $('#labNew').disabled = st === 'adding' || st === 'contact' || st === 'ready';
+  $('#labFree').disabled = !(st === 'test' && (!LAB.dpd || LAB.dpd.free === null));
+  $('#labTotal').disabled = !(st === 'test' && (!LAB.dpd || LAB.dpd.total === null));
+  if (st === 'ready') $('#labPhaseTxt').innerHTML = `<p class="phaseTitle" style="color:var(--label)">Ready</p><p class="small muted" style="margin:0">No chlorine added yet. The marker on the phase map moves as you add chlorine.</p>`;
+  else {
+    const ph = ChlorineModel.residuals(Math.max(cum, 0.001), LAB.w, LAB.ct).phase, [title, col, why] = PHASE_INFO[ph];
+    $('#labPhaseTxt').innerHTML = `<div class="small muted">${st === 'adding' ? 'Chlorine added so far' : 'Dose'}: <b style="color:var(--text)">${cum.toFixed(1)} mg/L</b></div><p class="phaseTitle" style="color:${col};margin-top:4px">${title}</p><p class="small" style="margin:0">${why}</p>`;
+  }
+  const pm = $('#labPbar .pm'); if (pm) pm.style.left = `calc(${Math.min(100, cum / 10 * 100)}% - 1px)`;
+  const S = LAB.stats, U = LAB.U, chl = pc('nh2cl');
+  const fr = LAB.parts.filter(p => p.alive && p.type === 'hocl' && p.fate === 'free' && !p.falling).length;
+  const segs = [['Used by reducing agents → Cl⁻', S.red, '#e06a5c'], ['Used by organic matter → Cl⁻', S.org, '#6f8798'], ['Held as chloramine (combined)', chl, '#8fb4cc'], ['Destroyed with chloramine → N₂ + Cl⁻', 2 * S.destroy, '#e3b341'], ['Free chlorine', fr, '#39d98a']];
+  const added = Math.round(LAB.base / U) + LAB.spawned, tot = Math.max(1, added);
+  $('#labWhere').innerHTML = `<div class="small muted">Chlorine added: <b style="color:var(--text)">${(added * U).toFixed(1)} mg/L</b></div>
+    <div class="where">${segs.map(s => `<div style="width:${s[1] / tot * 100}%;background:${s[2]}"></div>`).join('')}</div>
+    ${segs.map(s => `<div class="wrow"><span><b class="dot" style="background:${s[2]}"></b>${s[0]}</span><b>${(s[1] * U).toFixed(1)}</b></div>`).join('')}
+    <div class="small" style="margin-top:8px">Measurable residual = combined + free ≈ <b>${((chl + fr) * U).toFixed(1)} mg/L</b></div>`;
+  $('#labClock').textContent = st === 'adding' ? 'Adding chlorine…' : st === 'contact' ? `Contact time: ${Math.min(LAB.ct, Math.round(LAB.cT / LAB.cDur * LAB.ct))} / ${LAB.ct} min` : st === 'test' ? 'Ready for DPD testing' : st === 'done' ? 'Test recorded. Add more chlorine or start a new sample.' : '';
+}
+
+function labPbar() { labModelCurve(); labChart(); }
+
+function renderVials() {
+  const d = LAB.dpd;
+  const v = (lab, val) => `<div style="text-align:center;min-width:70px"><div class="vial"><div style="background:${val === null ? 'transparent' : pink(val)}"></div></div><div class="small muted">${lab}</div><b>${val === null ? '—' : f2(val) + ' mg/L'}</b></div>`;
+  let h = v('Free', d ? d.free : null) + v('Total', d ? d.total : null);
+  if (d && d.free !== null && d.total !== null) h += `<div class="stat"><b>${f2(d.total - d.free)} mg/L</b><span>Combined = total − free</span></div><div class="stat"><b>${f2(LAB.dose - d.total)} mg/L</b><span>Demand = dose − total</span></div>`;
+  $('#labVials').innerHTML = h;
+}
+
+function labTest(kind) {
+  if (LAB.state !== 'test') return;
+  if (!LAB.dpd) { const r = ChlorineModel.dpdRead(LAB.plan.st, 0.5); LAB.dpd = { free: null, total: null, raw: { free: r2(r.free), total: r2(Math.max(r.total, r.free)) } }; }
+  LAB.dpd[kind] = LAB.dpd.raw[kind];
+  renderVials();
+  if (LAB.dpd.free !== null && LAB.dpd.total !== null) labRecord();
+  labUI();
+}
+
+function labObs() {
+  const o = [], st = LAB.plan.st;
+  if (pc('rust')) o.push('orange-brown rust flecks'); if (pc('mno2')) o.push('black MnO₂ specks'); if (pc('mn2')) o.push('some Mn²⁺ still dissolved');
+  if (pc('sulfur')) o.push('slightly milky (sulfur)'); if (LAB.stats.destroy) o.push('N₂ bubbles released'); if (st.odor !== 'none') o.push(st.odor);
+  return o.join('; ') || 'clear, no change';
+}
+
+function labRecord() {
+  const d = LAB.dpd, st = LAB.plan.st;
+  const row = { dose: LAB.dose, ct: LAB.ct, free: d.free, total: d.total, combined: r2(d.total - d.free), phase: st.phase, killed: LAB.plan.killed, obs: (LAB.stepwise ? '(added in steps) ' : '') + labObs() };
+  LAB.results[LAB.scen].push(row); LAB.state = 'done'; prog.labRes = LAB.results; saveProg();
+  narrate(`Recorded: dose ${row.dose} mg/L → free ${f2(row.free)}, total ${f2(row.total)} mg/L (Phase ${row.phase}). Add more chlorine to this beaker, or start a new sample.`, 'info');
+  if (row.free >= 0.5 && row.free <= 1.5) {
+    $('#labMission').innerHTML = `<div class="msg good"><b>Mission complete!</b> ${row.dose} mg/L left ${f2(row.free)} mg/L free chlorine and killed ${row.killed} of 8 microbes. ${f2(row.dose - row.total)} mg/L of your dose was chlorine demand.</div>`;
+    if (!prog.done['lab_' + LAB.scen]) { prog.done['lab_' + LAB.scen] = true; saveProg(); if (!prog.items.includes('pipette')) award('pipette'); }
+  }
+  try { localStorage.setItem(EXPORT_KEY, JSON.stringify({ scenario: LAB.w.name, dose: row.dose, contactTimeMin: row.ct, tempC: LAB.w.tempC, pH: LAB.w.pH, free: r2(st.free), combined: r2(st.combined), total: r2(st.total), hocFraction: r2(st.hoclFraction), phase: st.phase, microbesKilled: row.killed, timestamp: new Date().toISOString() })); } catch (e) {}
+  labNotebook(); labChart(); labCoach(); if (!LAB.postMode) labStage();
+}
+
+function labNotebook() {
+  const rows = LAB.results[LAB.scen] || [];
+  $('#labRows').innerHTML = rows.length ? rows.map((r, i) => `<tr><td>${i + 1}</td><td>${r.dose.toFixed(1)}</td><td>${r.ct} min</td><td>${f2(r.free)}</td><td>${f2(r.total)}</td><td>${f2(r.combined)}</td><td>${r.phase}</td><td>${r.killed}/8</td><td style="text-align:left;white-space:normal">${r.obs}</td></tr>`).join('')
+    : `<tr><td colspan="9" class="muted">No tests yet for this water.</td></tr>`;
+}
+
+function labCoach() {
+  const rows = (LAB.results[LAB.scen] || []).filter(r => r.ct === LAB.ct), hasN = LAB.w.nh3n >= 0.05;
+  $('#labModel').disabled = rows.length < 4;
+  if (!rows.length) { $('#labCoach').innerHTML = ''; return; }
+  const phs = new Set(rows.map(r => r.phase)), need = (hasN ? [1, 2, 3, 4] : [1, 4]).filter(x => !phs.has(x));
+  const tip = need.length ? `You have results in Phase ${[...phs].sort().join(', ')}. Find a dose in Phase ${need.join(' and ')} to complete your curve.${need.includes(4) ? ' Hint: go higher to pass the breakpoint.' : ''}${need.includes(1) ? ' Hint: try a very small dose.' : ''}`
+    : `You found all ${hasN ? 'four' : 'the'} phases! ${rows.length >= 4 ? 'Press "Show whole curve" to see the full model curve with your points.' : ''}`;
+  $('#labCoach').innerHTML = `<div class="titus"><div class="av">Titus</div><div>${tip}</div></div>`;
+}
+
+function labModelCurve() {
+  const mc = { total: [], free: [], comb: [] };
+  for (let i = 0; i <= 200; i++) { const d = i * 0.05, st = ChlorineModel.residuals(d, LAB.w, LAB.ct); mc.total.push({ x: r2(d), y: st.total }); mc.free.push({ x: r2(d), y: st.free }); mc.comb.push({ x: r2(d), y: st.combined }); }
+  const lim = ChlorineModel.landmarks(LAB.w, LAB.ct).freeAppearsDose + 2.5;
+  LAB.mc = mc; LAB.ymax = Math.ceil(Math.max(3, ...mc.total.filter(q => q.x <= lim).map(q => q.y)) + 0.5);
+}
+function labZones(lim) {
+  const L = ChlorineModel.landmarks(LAB.w, LAB.ct), hasN = LAB.w.nh3n >= 0.05;
+  const z = hasN ? [[0, L.phase1End, 'Phase 1', 'rgba(224,106,92,.14)'], [L.phase1End, L.peakDose, 'Phase 2', 'rgba(143,180,204,.11)'], [L.peakDose, L.breakpointDose, 'Phase 3', 'rgba(227,179,65,.11)'], [L.breakpointDose, 10, 'Phase 4', 'rgba(95,211,138,.11)']]
+    : [[0, L.phase1End, 'Phase 1', 'rgba(224,106,92,.14)'], [L.phase1End, 10, 'Phase 4', 'rgba(95,211,138,.11)']];
+  const marks = {}; if (hasN && L.peakDose <= lim) marks.peak = r2(L.peakDose); if (hasN && L.breakpointDose <= lim) marks.bp = r2(L.breakpointDose);
+  return { zones: z.filter(q => q[0] < lim).map(q => ({ from: q[0], to: Math.min(q[1], lim), label: q[2], color: q[3] })), marks };
+}
+function labChart() {
+  const canvas = $('#labChart'); if (!canvas) return;
+  if (typeof Chart === 'undefined') { canvas.parentElement.innerHTML = '<div class="msg bad">Chart library could not load. Check your internet connection.</div>'; return; }
+  if (!LAB.mc) labModelCurve();
+  const line = (label, col, w, dash, order) => ({ label, data: [], borderColor: col, showLine: true, pointRadius: 0, borderWidth: w, borderDash: dash || [], order });
+  const ds = [
+    line('Total', '#46c2a8', 3.5, null, 3), line('Free', '#e3b341', 3, null, 3), line('Combined', '#8fb4cc', 2, [5, 4], 4),
+    Object.assign(line('No-demand line', '#e06a5c', 1.5, [6, 5], 5), { data: [{ x: 0, y: 0 }, { x: 10, y: 10 }] }),
+    { label: 'Beaker total', data: [], backgroundColor: '#46c2a8', borderColor: '#dcefff', borderWidth: 2, pointRadius: 8, order: 0 },
+    { label: 'Beaker free', data: [], backgroundColor: '#e3b341', borderColor: '#dcefff', borderWidth: 2, pointRadius: 6, order: 0 },
+    { label: 'DPD total', data: [], backgroundColor: '#0f2230', borderColor: '#46c2a8', borderWidth: 2.5, pointRadius: 6, pointStyle: 'rectRot', order: 1 },
+    { label: 'DPD free', data: [], backgroundColor: '#0f2230', borderColor: '#e3b341', borderWidth: 2.5, pointRadius: 5, pointStyle: 'rectRot', order: 1 },
+    line('Whole curve (total)', 'rgba(70,194,168,.3)', 2, [2, 3], 6), line('Whole curve (free)', 'rgba(227,179,65,.3)', 2, [2, 3], 6)
+  ];
+  const tick = { color: '#5c8299' }, grid = { color: '#1d3f55' }, border = { color: '#23495f' };
+  if (LAB.chart) LAB.chart.destroy();
+  LAB.chart = new Chart(canvas, {
+    type: 'scatter', data: { datasets: ds },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { display: false }, tooltip: { filter: i => i.datasetIndex >= 4 && i.datasetIndex <= 7, callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y.toFixed(2)} mg/L at dose ${c.parsed.x.toFixed(1)}` } } },
+      scales: {
+        x: { min: 0, max: 10, title: { display: true, text: 'Chlorine dose (mg/L)', color: '#8fb4cc' }, ticks: tick, grid, border },
+        y: { min: 0, max: LAB.ymax, title: { display: true, text: 'Residual (mg/L)', color: '#8fb4cc' }, ticks: tick, grid, border }
+      }
+    },
+    plugins: [overlayPlugin]
+  });
+  labChartUpdate();
+}
+function labChartUpdate() {
+  const c = LAB.chart, mc = LAB.mc; if (!c || !mc) return;
+  const cum = labCum(), key = LAB.scen + '|' + LAB.ct;
+  LAB.traceMax[key] = Math.max(LAB.traceMax[key] || 0, cum);
+  const tr = LAB.traceMax[key], upto = arr => arr.filter(q => q.x <= tr + 1e-9);
+  const ds = c.data.datasets;
+  ds[0].data = upto(mc.total); ds[1].data = upto(mc.free); ds[2].data = upto(mc.comb);
+  if (tr > 0 && cum > 0) {
+    const st = ChlorineModel.residuals(cum, LAB.w, LAB.ct);
+    ds[0].data.push({ x: tr, y: ChlorineModel.residuals(tr, LAB.w, LAB.ct).total });
+    ds[1].data.push({ x: tr, y: ChlorineModel.residuals(tr, LAB.w, LAB.ct).free });
+    ds[2].data.push({ x: tr, y: ChlorineModel.residuals(tr, LAB.w, LAB.ct).combined });
+    ds[4].data = [{ x: cum, y: st.total }]; ds[5].data = st.free > 0.01 ? [{ x: cum, y: st.free }] : [];
+  } else { ds[4].data = [{ x: 0, y: 0 }]; ds[5].data = []; }
+  const rows = (LAB.results[LAB.scen] || []).filter(r => r.ct === LAB.ct);
+  ds[6].data = rows.map(r => ({ x: r.dose, y: r.total })); ds[7].data = rows.map(r => ({ x: r.dose, y: r.free }));
+  ds[8].data = LAB.showModel ? mc.total : []; ds[9].data = LAB.showModel ? mc.free : [];
+  c.$ov = labZones(LAB.showModel ? 10 : tr);
+  c.update('none');
+}
+
+function labLoop(ts) {
+  const dt = Math.min(0.05, (ts - (LAB.last || ts)) / 1000); LAB.last = ts;
+  if ($('#lab').classList.contains('show')) {
+    labStep(dt); labDraw();
+    if (LAB.state === 'adding') labChartUpdate();
+    if (ts - LAB.uiT > 120) { LAB.uiT = ts; labUI(); if (LAB.state !== 'adding') labChartUpdate(); }
+  }
+  requestAnimationFrame(labLoop);
+}
+
+/* ===================== Virtual lab flow: pre-lab → lab → analysis → next ===================== */
+const LAB_ORDER = ['standard', 'well', 'snow', 'rain', 'algae', 'clean'];
+const LAB_REWARD = { standard: 'flask', well: 'thermometer', snow: 'labcoat', rain: 'microscope', algae: 'stirrer', clean: 'notebook' };
+const labSt = k => prog.lab[k] || (prog.lab[k] = {});
+function labUnlocked(k) { const i = LAB_ORDER.indexOf(k); return i <= 0 || !!(prog.lab[LAB_ORDER[i - 1]] || {}).done; }
+const tol = (x, t) => Math.max(t || 0.05, Math.abs(x) * 0.03);
+
+const LAB_PRE = {
+  standard: [
+    { q: 'What is the purpose of a chlorine demand test?', o: ['Find how much chlorine the water uses up before a residual remains', 'Measure the turbidity of the water', 'Find the best coagulant dose', 'Measure alkalinity'], a: 0, e: 'Demand = dose − residual. The test shows how much chlorine the water "eats" before chlorine is left over to protect it.' },
+    { q: 'In a chlorine demand test, each sample bottle gets:', o: ['The same water, but a different chlorine dose', 'The same dose, but different water', 'No chlorine at all', 'Only ammonia'], a: 0, e: 'You keep the water the same and change the dose. Plotting residual vs dose gives the breakpoint curve.' },
+    { q: 'This water has 0.5 mg/L ammonia-N. After Phase 1, what does the chlorine form?', o: ['Chloramines (combined chlorine)', 'Free chlorine right away', 'Only chloride', 'Nitrogen gas right away'], a: 0, e: 'Ammonia grabs chlorine first, forming chloramines. Free chlorine only builds up after the breakpoint.' },
+    { q: 'Which DPD reading should you take first, and when?', o: ['Free chlorine, within about 1 minute', 'Total chlorine, after 10 minutes', 'Either one, it does not matter', 'Free chlorine, after 10 minutes'], a: 0, e: 'If you wait, chloramines slowly react with the DPD reagent and make free chlorine read falsely high.' },
+    { q: 'In which phase is most of the residual free chlorine?', o: ['Phase 4, after the breakpoint', 'Phase 1', 'Phase 2', 'Phase 3'], a: 0, e: 'Before the breakpoint, chlorine is used up or held by ammonia. After it, extra chlorine stays free.' }
+  ],
+  well: [
+    { q: 'Why does well water often contain dissolved iron, manganese and H₂S?', o: ['Low oxygen underground keeps them in their reduced form', 'Chlorine is added underground', 'Groundwater has very high oxygen', 'Algae produce them'], a: 0, e: 'Without oxygen, iron and manganese stay dissolved (Fe²⁺, Mn²⁺) and sulfate can be turned into H₂S by bacteria.' },
+    { q: 'What happens to Fe²⁺ when chlorine oxidizes it?', o: ['It becomes Fe³⁺, which forms orange-brown rust particles', 'It disappears completely', 'It turns into ammonia', 'It becomes free chlorine'], a: 0, e: 'Fe²⁺ gives an electron to chlorine and becomes Fe³⁺, which forms solid rust. The solids still need to be filtered out.' },
+    { q: 'About how much chlorine does 1 mg/L of H₂S use (oxidized to sulfur)?', o: ['About 2.1 mg/L', 'About 0.64 mg/L', 'About 5 mg/L', 'About 7.6 mg/L'], a: 0, e: 'H₂S uses about 2.1 mg Cl₂ per mg (more if it is oxidized all the way to sulfate). Iron uses about 0.64.' },
+    { q: 'During Phase 1, what does the DPD residual read?', o: ['Near zero', 'It rises 1:1 with the dose', 'Very high', 'The same as the ammonia level'], a: 0, e: 'Reducing agents turn chlorine into chloride (Cl⁻), which DPD does not detect.' },
+    { q: 'Why might manganese still be dissolved after a short contact time?', o: ['Manganese reacts slowly with chlorine at normal pH', 'Manganese never reacts with chlorine', 'Manganese reacts instantly', 'The DPD reagent removes it'], a: 0, e: 'Mn²⁺ oxidizes slowly below about pH 8.5. It can sneak through and turn black later in the pipes.' }
+  ],
+  snow: [
+    { q: 'How does cold water affect chlorine reactions?', o: ['It slows them down', 'It speeds them up', 'It has no effect', 'It makes chlorine freeze'], a: 0, e: 'Chemical reactions slow down in cold water, so chlorine needs more time to finish its work.' },
+    { q: 'In cold water at the same contact time, the breakpoint usually moves to:', o: ['A higher dose', 'A lower dose', 'It disappears', 'Exactly 5:1 every time'], a: 0, e: 'Chloramine destruction is unfinished, so more chlorine is needed to reach the bottom of the dip.' },
+    { q: 'Which part of the curve is most slowed by cold water?', o: ['Phase 3, destroying the chloramines', 'Phase 1, iron oxidation', 'The DPD color change', 'Mixing the sample'], a: 0, e: 'Iron and chloramine formation are fast. Destroying chloramines takes minutes to hours and is very temperature sensitive.' },
+    { q: 'What does "contact time" mean?', o: ['How long chlorine stays in contact with the water before it is tested or used', 'How long it takes to mix the reagents', 'How long you wait to read DPD', 'How long a filter runs'], a: 0, e: 'Contact time (T) is when chlorine does its work. Together with concentration (C), it gives CT for disinfection.' },
+    { q: 'Spring snowmelt water is usually:', o: ['Cold, and it can carry turbidity and organic matter', 'Warm and very clear', 'High in H₂S', 'Salty'], a: 0, e: 'Melting snow and runoff bring cold water plus soil, particles and organics into rivers and reservoirs.' }
+  ],
+  rain: [
+    { q: 'Where can ammonia in storm runoff come from?', o: ['Fertilizer, manure, septic systems or wastewater', 'Sand and gravel', 'Chlorine', 'Iron pipes'], a: 0, e: 'Rain washes nitrogen from farms, animals and wastewater into rivers.' },
+    { q: 'More ammonia in the water makes the Phase 2 hump:', o: ['Taller, and the breakpoint moves to a higher dose', 'Shorter', 'Disappear', 'Stay exactly the same'], a: 0, e: 'More ammonia can hold more chlorine as chloramine, and more chlorine is needed to destroy it all.' },
+    { q: 'The theoretical breakpoint ratio (Cl₂ : NH₃-N by weight) is about:', o: ['7.6 : 1', '5 : 1', '1 : 1', '15 : 1'], a: 0, e: '5:1 is the combined peak. 7.6:1 is the theoretical breakpoint; real water often needs 8–10:1.' },
+    { q: 'With 0.9 mg/L NH₃-N, about how much chlorine is needed just to reach the theoretical breakpoint (ignoring Phase 1)?', o: ['About 6.8 mg/L', 'About 0.9 mg/L', 'About 4.5 mg/L', 'About 2.0 mg/L'], a: 0, e: '0.9 × 7.6 = 6.84 mg/L. (0.9 × 5 = 4.5 would only reach the peak.)' },
+    { q: 'At pH 7.0, which form of free chlorine is most common?', o: ['HOCl, the strong form', 'OCl⁻, the weak form', 'Chloramine', 'Chloride'], a: 0, e: 'Below pH 7.5, HOCl is more than half of the free chlorine. At pH 7.0 it is about 76%.' }
+  ],
+  algae: [
+    { q: 'Why can an algae bloom raise the pH of a lake?', o: ['Algae use up CO₂ during photosynthesis', 'Algae release chlorine', 'Algae produce acid rain', 'Algae add iron'], a: 0, e: 'Removing CO₂ (carbonic acid) during the day pushes the pH up, sometimes above 9.' },
+    { q: 'At pH 8.8, most free chlorine is in which form?', o: ['OCl⁻, the weaker form', 'HOCl, the strong form', 'Chloramine', 'Chloride'], a: 0, e: 'Above pH 7.5, OCl⁻ dominates. At pH 8.8 only about 5% is HOCl.' },
+    { q: 'HOCl and OCl⁻ are split about 50/50 at what pH?', o: ['About 7.5', 'About 5', 'About 9.5', 'About 11'], a: 0, e: 'The pKa of HOCl is about 7.5 at 25 °C.' },
+    { q: 'Organic nitrogen from algae forms organic chloramines. These:', o: ['Show up as combined residual but disinfect very poorly', 'Are strong disinfectants', 'Cannot be measured at all', 'Remove ammonia from the water'], a: 0, e: 'They make the residual look better than the real disinfecting power.' },
+    { q: 'Besides chlorine demand, algae can also cause:', o: ['Taste and odor problems and more disinfection byproducts', 'Colder water', 'More dissolved iron', 'More H₂S in every case'], a: 0, e: 'Algal organic matter reacts with chlorine to form THMs and HAAs, and it can cause earthy or musty tastes.' }
+  ],
+  clean: [
+    { q: 'If the water has no ammonia, what happens after Phase 1?', o: ['Chlorine goes straight to free chlorine, with no hump', 'A very tall hump forms', 'The residual falls as you add chlorine', 'Chloramines form'], a: 0, e: 'No ammonia means no chloramines to build up or destroy.' },
+    { q: 'Without ammonia, the curve after the small Phase 1 demand:', o: ['Rises close to 1:1 with the dose', 'Shows a hump and a dip', 'Stays at zero', 'Falls'], a: 0, e: 'Almost all added chlorine stays free once the small demand is met.' },
+    { q: 'Why do some utilities add ammonia on purpose (chloramination)?', o: ['Chloramine lasts longer in pipes and forms fewer byproducts', 'Chloramine is a stronger disinfectant than HOCl', 'It makes testing cheaper', 'It removes iron'], a: 0, e: 'Chloramine is weaker but more stable, so it protects long distribution systems with fewer THMs and HAAs.' },
+    { q: 'The chlorine demand of very clean water is:', o: ['Small', 'Very large', 'Always 5 mg/L', 'Negative'], a: 0, e: 'Very little in the water reacts with chlorine.' },
+    { q: 'The combined chlorine in this water will be:', o: ['Near zero', 'Very high', 'Equal to the free chlorine', 'Five times the free chlorine'], a: 0, e: 'With no ammonia, almost nothing forms combined chlorine (just a trace from organics).' }
+  ]
+};
+
+const LAB_POST = {
+  standard: {
+    mc: [
+      { q: 'In Phase 3 the residual went DOWN even though you added more chlorine. Why?', o: ['The extra chlorine destroyed the chloramines, releasing N₂ gas and turning into chloride', 'The DPD reagent ran out', 'The chlorine evaporated', 'Iron used up the extra chlorine'], a: 0, e: 'You saw it in the beaker: chloramines disappeared as N₂ bubbles, and both chlorines ended up as grey Cl⁻.' },
+      { q: 'Your Phase 2 sample had a high total residual but almost no free chlorine, and few microbes died. What does this teach an operator?', o: ['A good total residual does not guarantee strong disinfection, so always check free vs total', 'Total chlorine always equals free chlorine', 'Chloramines are stronger than free chlorine', 'The DPD test was wrong'], a: 0, e: 'Combined chlorine reads as residual but kills slowly. A free-chlorine plant must know which kind it has.' },
+      { q: 'A free-chlorine plant raises its dose, but the residual keeps falling. What should the operator do?', o: ['Keep increasing the dose to push past the breakpoint', 'Cut the dose back down', 'Turn off chlorination', 'Add ammonia'], a: 0, e: 'A falling residual with rising dose means Phase 3. Free chlorine only appears after the breakpoint.' }
+    ],
+    math: c => [
+      { num: true, q: `Use your own result: at a dose of <b>${c.row.dose} mg/L</b>, your total residual was <b>${f2(c.row.total)} mg/L</b>. What was the chlorine demand?`, ans: c.row.dose - c.row.total, unit: 'mg/L', sol: `Demand = dose − total residual = ${c.row.dose} − ${f2(c.row.total)} = <b>${f2(c.row.dose - c.row.total)} mg/L</b>` },
+      { num: true, q: `This water has a Phase 1 demand of <b>${f2(c.R)} mg/L</b> and <b>0.5 mg/L</b> ammonia-N. What is the theoretical breakpoint dose?`, ans: c.R + 3.8, unit: 'mg/L', sol: `Breakpoint ≈ Phase 1 + 7.6 × NH₃-N = ${f2(c.R)} + 7.6 × 0.5 = ${f2(c.R)} + 3.80 = <b>${f2(c.R + 3.8)} mg/L</b>. Your real curve needed a bit more, because real water needs about 8–10:1.` }
+    ]
+  },
+  well: {
+    mc: [
+      { q: 'Why did this well need a much higher dose before any residual appeared?', o: ['Iron, manganese and H₂S used up the chlorine first (a long Phase 1)', 'It had more microbes', 'Its pH was very high', 'It had much more ammonia'], a: 0, e: 'Each reducing agent took its share of chlorine and turned it into chloride before ammonia could even get any.' },
+      { q: 'You saw rust flecks and black specks in the beaker. What must the plant do about them?', o: ['Filter them out, because they are solids that cause colored water and stains', 'Nothing, they are gone', 'Add more chlorine to dissolve them', 'Nothing, they turn harmless on their own'], a: 0, e: 'Oxidation turns dissolved iron and manganese into particles, which is why groundwater plants oxidize before filtering.' },
+      { q: 'What could this plant do to use LESS chlorine?', o: ['Aerate first (or use permanganate) to oxidize iron and strip H₂S before chlorinating', 'Raise the pH to 11', 'Add ammonia', 'Skip filtration'], a: 0, e: 'Aeration lets oxygen do the cheap part of Phase 1, so chlorine can go to disinfection.' }
+    ],
+    math: c => [
+      { num: true, q: 'Estimate the Phase 1 chlorine demand of this well: Fe²⁺ <b>1.2 mg/L</b>, Mn²⁺ <b>0.2 mg/L</b>, H₂S <b>0.4 mg/L</b>. Use the factors 0.64, 1.3 and 2.1.', ans: 1.868, unit: 'mg/L', sol: '0.64 × 1.2 + 1.3 × 0.2 + 2.1 × 0.4 = 0.77 + 0.26 + 0.84 = <b>1.87 mg/L</b>' },
+      { num: true, q: `The well pumps <b>0.5 MGD</b>. Using your mission dose of <b>${c.row.dose} mg/L</b>, how many pounds of chlorine per day are needed?`, ans: c.row.dose * 0.5 * 8.34, unit: 'lbs/day', tol: 0.1, sol: `lbs/day = mg/L × MGD × 8.34 = ${c.row.dose} × 0.5 × 8.34 = <b>${f2(c.row.dose * 0.5 * 8.34)} lbs/day</b>` }
+    ]
+  },
+  snow: {
+    mc: [
+      { q: 'Compared with the standard water, why did this cold water need more chlorine to reach the breakpoint at 30 minutes?', o: ['Cold water slowed chloramine destruction, so Phase 3 was unfinished', 'It had much less ammonia', 'It had much more iron', 'Its pH was higher'], a: 0, e: 'At 4 °C only part of Phase 3 can finish in 30 minutes, so the dip is shallower and the breakpoint moves right.' },
+      { q: 'If you change the contact time from 30 to 60 minutes in cold water, what happens?', o: ['More of Phase 3 finishes, so the breakpoint moves to a lower dose', 'Nothing changes', 'The breakpoint moves to a higher dose', 'Free chlorine disappears'], a: 0, e: 'More time lets the slow reactions catch up. Try it: switch the contact time and rerun a dose.' },
+      { q: 'What should an operator do in winter?', o: ['Allow more contact time or raise the dose, and confirm free residual and CT with tests', 'Turn the chlorine off', 'Use the summer dose without testing', 'Add ammonia'], a: 0, e: 'Cold water also makes disinfection itself slower, so plants watch CT closely in winter.' }
+    ],
+    math: c => [
+      { num: true, q: `Use your own result: at a dose of <b>${c.row.dose} mg/L</b>, your total residual was <b>${f2(c.row.total)} mg/L</b>. What was the chlorine demand?`, ans: c.row.dose - c.row.total, unit: 'mg/L', sol: `Demand = ${c.row.dose} − ${f2(c.row.total)} = <b>${f2(c.row.dose - c.row.total)} mg/L</b>` },
+      { num: true, q: `CT = concentration × time. Your mission test had <b>${f2(c.row.free)} mg/L</b> free chlorine for <b>${c.row.ct} min</b>. What is the CT?`, ans: c.row.free * c.row.ct, unit: 'mg·min/L', tol: 0.5, sol: `CT = ${f2(c.row.free)} × ${c.row.ct} = <b>${f2(c.row.free * c.row.ct)} mg·min/L</b>. In cold water a higher CT is needed for the same kill, which is what the Contact Time Lab will explore.` }
+    ]
+  },
+  rain: {
+    mc: [
+      { q: 'Why was the hump taller in this water than in the standard water?', o: ['More ammonia captured more chlorine as chloramine', 'There was less iron', 'The water was colder', 'The pH was higher'], a: 0, e: 'More ammonia = more seats on the bus. The peak height is about 5 × NH₃-N.' },
+      { q: 'After a storm, a free-chlorine plant sees a normal total residual but almost no free chlorine. What is the likely cause?', o: ['Ammonia from runoff has put the plant in Phase 2', 'The analyzer is broken', 'There is too much free chlorine', 'The turbidity dropped'], a: 0, e: 'Runoff ammonia turns the chlorine into chloramines. Total looks fine, but free is gone.' },
+      { q: 'What is the best response?', o: ['Run a new demand test and raise the dose past the breakpoint, and re-check the jar test since turbidity rises too', 'Cut the dose', 'Ignore it until the weather clears', 'Add more ammonia'], a: 0, e: 'Storms change both chlorine demand and coagulation, so both tests should be rerun.' }
+    ],
+    math: c => [
+      { num: true, q: `Phase 1 demand is <b>${f2(c.R)} mg/L</b> and ammonia-N is <b>0.9 mg/L</b>. What is the theoretical breakpoint dose?`, ans: c.R + 6.84, unit: 'mg/L', sol: `${f2(c.R)} + 7.6 × 0.9 = ${f2(c.R)} + 6.84 = <b>${f2(c.R + 6.84)} mg/L</b>` },
+      { num: true, q: `The plant treats <b>3 MGD</b>. Using your mission dose of <b>${c.row.dose} mg/L</b>, how many pounds of chlorine per day are needed?`, ans: c.row.dose * 3 * 8.34, unit: 'lbs/day', tol: 0.3, sol: `${c.row.dose} × 3 × 8.34 = <b>${f2(c.row.dose * 3 * 8.34)} lbs/day</b>. Compare: a normal day with 0.3 mg/L ammonia would need far less.` }
+    ]
+  },
+  algae: {
+    mc: [
+      { q: 'Your sample had good free chlorine, but some microbes survived. Why?', o: ['The high pH turned most free chlorine into weak OCl⁻', 'The DPD test was wrong', 'There was too much HOCl', 'The water was too cold'], a: 0, e: 'DPD reads HOCl and OCl⁻ together as "free", but at pH 8.8 only about 5% is the strong HOCl.' },
+      { q: 'What would improve disinfection in this water?', o: ['Lower the pH (where allowed), give more contact time, or keep a higher residual, and check CT', 'Raise the pH even more', 'Add ammonia', 'Shorten the contact time'], a: 0, e: 'More HOCl, more time, or more chlorine all raise the real killing power.' },
+      { q: 'Why did some combined chlorine remain even after the breakpoint?', o: ['Organic chloramines from algae are hard to destroy', 'Iron came back', 'Temperature made new ammonia', 'OCl⁻ turned into chloramine'], a: 0, e: 'Organic nitrogen leaves a stubborn combined residual that adds little disinfection.' }
+    ],
+    math: c => [
+      { num: true, q: 'What percent of free chlorine is HOCl at pH 8.8? Use: HOCl fraction = 1 ÷ (1 + 10^(pH − 7.5)).', ans: 4.77, unit: '%', tol: 0.5, sol: '1 ÷ (1 + 10^1.3) = 1 ÷ (1 + 19.95) = 0.048 → <b>about 4.8%</b>' },
+      { num: true, q: `Your mission test read <b>${f2(c.row.free)} mg/L</b> free chlorine. How much of it is the strong HOCl (use 4.8%)?`, ans: c.row.free * 0.048, unit: 'mg/L', tol: 0.02, sol: `${f2(c.row.free)} × 0.048 = <b>${(c.row.free * 0.048).toFixed(3)} mg/L</b>. That's why the microbes survived.` }
+    ]
+  },
+  clean: {
+    mc: [
+      { q: 'Why did the clean-water curve look like a straight line instead of a hump?', o: ['There was no ammonia, so no chloramines built up or got destroyed', 'The meter was broken', 'The water was too cold', 'There was too much iron'], a: 0, e: 'The hump and dip both come from ammonia. Remove ammonia and the curve rises almost 1:1.' },
+      { q: 'Looking at all six waters, what mainly decides the shape of the curve?', o: ['The reducing agents (Phase 1) and the ammonia (the hump), plus temperature and contact time', 'Only the pH', 'Only the chlorine dose', 'The color of the water'], a: 0, e: 'Reducing agents set how long Phase 1 is, ammonia sets the hump, and temperature and time set how deep the dip gets.' },
+      { q: 'Why must every plant run its own demand test instead of copying another plant\'s dose?', o: ['Water chemistry changes with the source, the season and the weather', 'Chlorine is different at every plant', 'Every plant uses a different DPD color', 'It is just tradition'], a: 0, e: 'You just saw six waters with six very different curves.' }
+    ],
+    math: c => [
+      { num: true, q: `Use your own result: at a dose of <b>${c.row.dose} mg/L</b>, your total residual was <b>${f2(c.row.total)} mg/L</b>. What was the chlorine demand?`, ans: c.row.dose - c.row.total, unit: 'mg/L', sol: `${c.row.dose} − ${f2(c.row.total)} = <b>${f2(c.row.dose - c.row.total)} mg/L</b>. Small, as expected for clean water.` },
+      { num: true, q: `At <b>${c.row.dose} mg/L</b> you measured <b>${f2(c.row.free)} mg/L</b> free chlorine. Past the breakpoint, free chlorine rises about 1:1. What dose would give exactly <b>1.00 mg/L</b> free?`, ans: c.row.dose + (1 - c.row.free), unit: 'mg/L', sol: `Dose = ${c.row.dose} + (1.00 − ${f2(c.row.free)}) = <b>${f2(c.row.dose + 1 - c.row.free)} mg/L</b>` }
+    ]
+  }
+};
+
+function runQuiz(wrap, title, qs, onDone) {
+  const items = qs.map(q => q.num ? q : { ...q, order: shuffle(q.o.map((_, i) => i)) });
+  let i = 0, score = 0;
+  function show() {
+    const q = items[i];
+    wrap.innerHTML = `<div class="card"><div class="qnum">${title} · Question ${i + 1} of ${items.length}</div><h2 style="margin:6px 0 12px;font-size:18px">${q.q}</h2>` +
+      (q.num ? `<div class="row"><input type="number" step="any" id="rqIn" aria-label="Your answer" style="width:120px"> <span class="muted">${q.unit || ''}</span><button class="primary" id="rqSub">Check</button></div><div id="rqErr" class="err"></div>`
+        : `<div id="rqOpts">${q.order.map(oi => `<button class="opt" data-i="${oi}">${q.o[oi]}</button>`).join('')}</div>`) + `<div id="rqFb"></div></div>`;
+    const fb = (ok, t) => {
+      $('#rqFb', wrap).innerHTML = `<div class="msg ${ok ? 'good' : 'bad'}"><b>${ok ? 'Correct.' : 'Not quite.'}</b> ${t}</div><div class="row" style="margin-top:10px"><button class="primary" id="rqNext">${i < items.length - 1 ? 'Next question' : 'See result'}</button></div>`;
+      $('#rqNext', wrap).onclick = () => { i++; if (i < items.length) show(); else onDone(score, items.length); };
+    };
+    if (q.num) {
+      const inp = $('#rqIn', wrap);
+      inp.oninput = () => { $('#rqErr', wrap).textContent = ''; };
+      inp.onkeydown = e => { if (e.key === 'Enter') $('#rqSub', wrap).click(); };
+      $('#rqSub', wrap).onclick = () => {
+        if (inp.value === '' || isNaN(+inp.value)) { $('#rqErr', wrap).textContent = 'Enter a number first.'; return; }
+        const ok = Math.abs(+inp.value - q.ans) <= tol(q.ans, q.tol); if (ok) score++;
+        inp.disabled = true; $('#rqSub', wrap).disabled = true; fb(ok, q.sol);
+      };
+    } else $$('#rqOpts .opt', wrap).forEach(btn => btn.onclick = () => {
+      const ok = +btn.dataset.i === q.a; if (ok) score++;
+      $$('#rqOpts .opt', wrap).forEach(b => { b.disabled = true; if (+b.dataset.i === q.a) b.classList.add('correct'); else if (b === btn) b.classList.add('wrong'); });
+      fb(ok, q.e);
+    });
+  }
+  show();
+}
+
+function labStepper() {
+  $('#labScen').innerHTML = LAB_ORDER.map((k, i) => {
+    const S = prog.lab[k] || {}, un = labUnlocked(k);
+    return `<button class="presetBtn ${k === LAB.scen ? 'active' : ''}" data-s="${k}" ${un ? '' : 'disabled'}>${S.done ? '✓ ' : un ? '' : '🔒 '}${i + 1} · ${PRESETS[k].name}${S.post === 5 ? ' ★' : ''}</button>`;
+  }).join('');
+  $$('#labScen .presetBtn').forEach(b => b.onclick = () => { if (LAB.state === 'adding' || LAB.state === 'contact' || !labUnlocked(b.dataset.s)) return; labScenario(b.dataset.s); });
+}
+
+function labStage() {
+  const k = LAB.scen, S = labSt(k), stage = S.pre === undefined ? 'pre' : LAB.postMode ? 'post' : 'sim';
+  $('#labBody').hidden = stage === 'pre';
+  if (stage === 'pre') labPreQuiz(); else if (stage === 'post') labPost(); else labSimBanner();
+}
+
+function labPreQuiz() {
+  const k = LAB.scen, name = PRESETS[k].name;
+  runQuiz($('#labStage'), `Pre-lab · ${name}`, LAB_PRE[k], (sc, n) => {
+    labSt(k).pre = sc; saveProg();
+    let rw;
+    if (sc === n) { award(LAB_REWARD[k]); rw = `${ITEMS[LAB_REWARD[k]].ic} ${ITEMS[LAB_REWARD[k]].name}`; }
+    else if (sc >= 3) { award('gloves'); rw = `${ITEMS.gloves.ic} ${ITEMS.gloves.name}`; }
+    else { prog.poop++; saveProg(); renderShelf(); rw = '💩'; }
+    $('#labStage').innerHTML = `<div class="card"><h2>Pre-lab score: ${sc}/${n}</h2><p>Reward: ${rw}</p><p class="muted">${sc === n ? 'Perfect! You are ready for the lab.' : 'Read the explanations again, then see if the lab confirms them.'}</p><button class="primary" id="labGo">Start the lab</button></div>`;
+    $('#labGo').onclick = () => labStage();
+  });
+}
+
+function labMissionRow(k) { const rows = LAB.results[k] || []; return rows.find(r => r.free >= 0.5 && r.free <= 1.5) || rows[rows.length - 1]; }
+
+function labSimBanner() {
+  const k = LAB.scen, S = labSt(k), rows = LAB.results[k] || [], mission = rows.some(r => r.free >= 0.5 && r.free <= 1.5);
+  const i = LAB_ORDER.indexOf(k), next = LAB_ORDER[i + 1];
+  if (S.done) {
+    $('#labStage').innerHTML = `<div class="card"><div class="row" style="justify-content:space-between"><span><b style="color:var(--green)">✓ ${PRESETS[k].name} complete.</b> <span class="muted">Pre-lab ${S.pre}/5 · Analysis ${S.post}/5</span></span>
+      <span class="row">${mission && rows.length >= 4 ? '<button id="labRedo">Redo analysis</button>' : ''}${next ? `<button class="primary" id="labNext">Next: ${PRESETS[next].name} →</button>` : ''}</span></div></div>`;
+    const r = $('#labRedo'); if (r) r.onclick = () => { LAB.postMode = true; labStage(); };
+    const n = $('#labNext'); if (n) n.onclick = () => labScenario(next);
+    return;
+  }
+  const ok = mission && rows.length >= 4;
+  const tick = b => b ? '<span style="color:var(--green)">✓</span>' : '<span class="muted">○</span>';
+  $('#labStage').innerHTML = `<div class="card"><h3>Lab tasks</h3>
+    <div class="wrow"><span>${tick(mission)} Mission: get 0.5–1.5 mg/L free chlorine</span></div>
+    <div class="wrow"><span>${tick(rows.length >= 4)} Run at least 4 DPD tests (different doses)</span><b>${Math.min(rows.length, 4)}/4</b></div>
+    <div class="row" style="margin-top:12px"><button class="gold" id="labToPost" ${ok ? '' : 'disabled'}>Continue to analysis →</button>${ok ? '' : '<span class="small muted">Finish both tasks to unlock the analysis questions.</span>'}</div></div>`;
+  $('#labToPost').onclick = () => { if (!ok) return; LAB.postMode = true; labStage(); $('#labStage').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+}
+
+function labPost() {
+  const k = LAB.scen, P = LAB_POST[k], c = { row: labMissionRow(k), R: ChlorineModel.landmarks(LAB.w, LAB.ct).phase1End };
+  const m = P.math(c), qs = [P.mc[0], P.mc[1], m[0], P.mc[2], m[1]];
+  runQuiz($('#labStage'), `Analysis · ${PRESETS[k].name}`, qs, (sc, n) => {
+    const S = labSt(k); S.post = Math.max(S.post || 0, sc); S.done = true; saveProg(); LAB.postMode = false; labStepper();
+    const i = LAB_ORDER.indexOf(k), next = LAB_ORDER[i + 1];
+    const allDone = LAB_ORDER.every(x => (prog.lab[x] || {}).done);
+    $('#labStage').innerHTML = `<div class="card"><h2>Analysis score: ${sc}/${n}</h2>
+      <p>${sc === n ? '⭐ Perfect analysis!' : sc >= 3 ? 'Good work. Review the explanations you missed.' : 'Look back at your notebook and curve, then try the analysis again.'}</p>
+      ${allDone ? '<div class="msg good"><b>All six waters complete!</b> You have seen how reducing agents, ammonia, temperature, contact time and pH shape the breakpoint curve.</div>' : ''}
+      <div class="row" style="margin-top:10px">${next ? `<button class="primary" id="labNext">Next water: ${PRESETS[next].name} →</button>` : ''}<button id="labBack">Back to this lab</button><button id="labRedo">Redo analysis</button></div></div>`;
+    const n2 = $('#labNext'); if (n2) n2.onclick = () => { labScenario(next); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    $('#labBack').onclick = () => labStage();
+    $('#labRedo').onclick = () => { LAB.postMode = true; labStage(); };
+  });
+}
+
+/* ===================== Start ===================== */
+renderShelf();
+['m1', 'm2', 'm3'].forEach(initQuiz);
+m0Init();
+labInit();
+</script>
+</body>
+</html>
